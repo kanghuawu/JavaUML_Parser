@@ -46,7 +46,7 @@ public class MyJavaParser {
 //
 //        // prints the resulting compilation unit to default system output
 //        System.out.println(in.toString());
-		String dir = "/Users/bondk/Dropbox/Eclipse/java-uml-parser/src/main/resources/test.png";
+		String dir = "/Users/bondk/Dropbox/SJSU/CMPE202/00_peronsal_project/cmpe202-java-uml-parser/java-uml-parser/src/main/resources/test.png";
 		OutputStream png = new FileOutputStream(dir);
 		String source = "@startuml\n";
 		source += "nf -> sixty_seven : is\n";
@@ -57,5 +57,6 @@ public class MyJavaParser {
 		String desc = reader.generateImage(png);
 		System.out.println(desc);
 		// Return a null string if no generation
+		System.out.println("test");
     }
 }

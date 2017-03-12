@@ -3,11 +3,10 @@ package java_uml_parser;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.*;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
@@ -16,26 +15,31 @@ import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
-import net.sourceforge.plantuml.SourceStringReader;
+
 
 public class MyJavaParser {
 	
+
 	private String directory;
-	private List<String> javaFiles;
+	private List<CompilationUnit> javaFiles;
+	private StringBuilder parsedStr;
 	
-	
-	public MyJavaParser(String directory){
+	public MyJavaParser(String directory) throws FileNotFoundException{
 		this.directory = directory;
 		javaFiles = this.findJavaFiles();
 	}
 	
-	private List<String> findJavaFiles(
-			){
-		List<String> javaFiles = new ArrayList<String>();
+	private List<CompilationUnit> findJavaFiles() throws FileNotFoundException{
+		List<CompilationUnit> javaFiles = new ArrayList<CompilationUnit>();
 		File dir = new File(this.directory);
+		String filename;
+		CompilationUnit cu;
 		for (File file : dir.listFiles()) {
+			
 		    if (file.getName().endsWith((".java"))) {
-		    	javaFiles.add(this.directory + "/" + file.getName());
+		    	filename = this.directory + "/" + file.getName();
+		    	cu = JavaParser.parse(new FileInputStream(filename));
+		    	javaFiles.add(cu);
 		    }
 		  }
 		return javaFiles;
@@ -47,38 +51,26 @@ public class MyJavaParser {
             /* here you can access the attributes of the method.
              this method will be called for all methods in this 
              CompilationUnit, including inner class methods */
-            System.out.println(n.getName());
+        	System.out.println(n.toString());
+            System.out.println(n.getType() + " : " + n.getName());
             super.visit(n, arg);
         }
     }
 	
-    public void visit(MethodDeclaration n, Void arg) {
-        /* here you can access the attributes of the method.
-         this method will be called for all methods in this 
-         CompilationUnit, including inner class methods */
-        System.out.println(n.getName());
-        super.visit(n, arg);
-    }
 	
 	public static void main(String[] args) throws IOException {
-//		String directory = "/Users/bondk/Dropbox/SJSU/CMPE202/00_peronsal_project/cmpe202-java-uml-parser/java-uml-parser/src/main/resources/uml-parser-test-1";
-//		MyJavaParser par = new MyJavaParser(directory);
-//		List<String> java = par.findJavaFiles();
-//		for(String name : java){
-//			System.out.println(name);
-//		}
+		String directory = "/Users/bondk/Dropbox/SJSU/CMPE202/00_peronsal_project/cmpe202-java-uml-parser/java-uml-parser/src/main/resources/uml-parser-test-4";
+		MyJavaParser par = new MyJavaParser(directory);
+		List<CompilationUnit> java = par.findJavaFiles();
+		for(CompilationUnit cu : java){
+			System.out.println(cu.toString());
+			cu.getNodesByType(MethodDeclaration.class).stream().forEach(f -> System.out.println(f.getModifiers()));
+//			System.out.println(cu.getClassByName("A"));
+//			new MethodVisitor().visit(cu, null);
+		}
 		
 		
 		
-        // creates an input stream for the file to be parsed
-		String dir = "/Users/bondk/Dropbox/SJSU/CMPE202/00_peronsal_project/cmpe202-java-uml-parser/java-uml-parser/src/main/resources/uml-parser-test-4/ConcreteObserver.java";
-        FileInputStream in = new FileInputStream(dir);
-
-        // parse the file
-        CompilationUnit cu = JavaParser.parse(in);
-
-        // prints the resulting compilation unit to default system output
-        System.out.println(cu.toString());
 		
 		
 //		String dir = "/Users/bondk/Dropbox/SJSU/CMPE202/00_peronsal_project/cmpe202-java-uml-parser/java-uml-parser/src/main/resources/test.png";

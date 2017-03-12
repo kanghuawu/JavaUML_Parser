@@ -10,9 +10,8 @@ import java.util.stream.*;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.ast.body.FieldDeclaration;
-import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.Modifier;
+import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
 
@@ -51,8 +50,8 @@ public class MyJavaParser {
             /* here you can access the attributes of the method.
              this method will be called for all methods in this 
              CompilationUnit, including inner class methods */
-        	System.out.println(n.toString());
-            System.out.println(n.getType() + " : " + n.getName());
+//        	System.out.println(n.toString());
+//            System.out.println(n.getType() + " : " + n.getName());
             super.visit(n, arg);
         }
     }
@@ -63,8 +62,10 @@ public class MyJavaParser {
 		MyJavaParser par = new MyJavaParser(directory);
 		List<CompilationUnit> java = par.findJavaFiles();
 		for(CompilationUnit cu : java){
-			System.out.println(cu.toString());
-			cu.getNodesByType(MethodDeclaration.class).stream().forEach(f -> System.out.println(f.getModifiers()));
+//			System.out.println(cu.toString());
+			Stream<ClassOrInterfaceDeclaration> result = cu.getNodesByType(ClassOrInterfaceDeclaration.class).stream()
+					.filter(f -> f.getModifiers().contains(Modifier.PUBLIC) );
+			result.forEach(f -> System.out.println(f.getImplementedTypes().get(0)));
 //			System.out.println(cu.getClassByName("A"));
 //			new MethodVisitor().visit(cu, null);
 		}

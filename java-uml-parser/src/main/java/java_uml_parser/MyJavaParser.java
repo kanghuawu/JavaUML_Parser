@@ -1,90 +1,86 @@
 package java_uml_parser;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
+import static com.github.javaparser.ast.Modifier.*;
+
 import java.util.List;
-import java.util.stream.*;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.Modifier;
-import com.github.javaparser.ast.body.*;
-import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
-
-
+import com.github.javaparser.ast.body.BodyDeclaration;
+import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.TypeDeclaration;
 
 public class MyJavaParser {
 	
 
-	private String directory;
-	private List<CompilationUnit> javaFiles;
-	private StringBuilder parsedStr;
+	private String javaDir;
+	private String className;
+	private FileInputStream in = null;
+	private CompilationUnit cu;
+	private StringBuilder result;
 	
-	public MyJavaParser(String directory) throws FileNotFoundException{
-		this.directory = directory;
-		javaFiles = this.findJavaFiles();
-	}
-	
-	private List<CompilationUnit> findJavaFiles() throws FileNotFoundException{
-		List<CompilationUnit> javaFiles = new ArrayList<CompilationUnit>();
-		File dir = new File(this.directory);
-		String filename;
-		CompilationUnit cu;
-		for (File file : dir.listFiles()) {
-			
-		    if (file.getName().endsWith((".java"))) {
-		    	filename = this.directory + "/" + file.getName();
-		    	cu = JavaParser.parse(new FileInputStream(filename));
-		    	javaFiles.add(cu);
+	public MyJavaParser(String directory) {
+		this.javaDir = directory;
+		
+		try{
+			this.in = new FileInputStream(directory);
+			this.cu = JavaParser.parse(this.in);
+			if (this.in != null) {
+				this.in.close();
 		    }
-		  }
-		return javaFiles;
-	}
-	
-	private static class MethodVisitor extends VoidVisitorAdapter<Void> {
-        @Override
-        public void visit(MethodDeclaration n, Void arg) {
-            /* here you can access the attributes of the method.
-             this method will be called for all methods in this 
-             CompilationUnit, including inner class methods */
-//        	System.out.println(n.toString());
-//            System.out.println(n.getType() + " : " + n.getName());
-            super.visit(n, arg);
-        }
-    }
-	
-	
-	public static void main(String[] args) throws IOException {
-		String directory = "/Users/bondk/Dropbox/SJSU/CMPE202/00_peronsal_project/cmpe202-java-uml-parser/java-uml-parser/src/main/resources/uml-parser-test-4";
-		MyJavaParser par = new MyJavaParser(directory);
-		List<CompilationUnit> java = par.findJavaFiles();
-		for(CompilationUnit cu : java){
-//			System.out.println(cu.toString());
-			Stream<ClassOrInterfaceDeclaration> result = cu.getNodesByType(ClassOrInterfaceDeclaration.class).stream()
-					.filter(f -> f.getModifiers().contains(Modifier.PUBLIC) );
-			result.forEach(f -> System.out.println(f.getImplementedTypes().get(0)));
-//			System.out.println(cu.getClassByName("A"));
-//			new MethodVisitor().visit(cu, null);
+		}catch (FileNotFoundException e){
+			System.out.println(e.getMessage());
+		} catch (IOException e) {
+			System.out.println(e.getMessage());
 		}
 		
+		result = new StringBuilder();
 		
 		
+		parseClassType();
+		parseAttributes();
+		parseMethods();
+	}
+	
+	public StringBuilder getParsedFile(){
+		return result;
+	}
+	
+	private void parseClassType(){
 		
+		this.className = cu.getTypes().get(0).getNameAsString();
+		result.append("class ");
+		result.append(this.className);
+		result.append("\n");
+	}
+	
+	private void parseAttributes(){
+
+		for (FieldDeclaration field : cu.getTypes().get(0).getFields() ) {
+			if(field.getModifiers().contains(PUBLIC)){
+				result.append(this.className + " : + ");
+		    }else if(field.getModifiers().contains(PRIVATE)){
+		    	result.append(this.className + " : - ");
+		    }else{
+		    	continue;
+		    }
+			result.append(field.getCommonType() + " " + field.getVariables().get(0) + "\n");
+		}
+	}
+	
+	private void parseMethods(){
 		
-//		String dir = "/Users/bondk/Dropbox/SJSU/CMPE202/00_peronsal_project/cmpe202-java-uml-parser/java-uml-parser/src/main/resources/test.png";
-//		OutputStream png = new FileOutputStream(dir);
-//		String source = "@startuml\n";
-//		source += "nf -> sixty_seven : is\n";
-//		source += "@enduml\n";
-//
-//		SourceStringReader reader = new SourceStringReader(source);
-//		// Write the first image to "png"
-//		String desc = reader.generateImage(png);
-//		System.out.println(desc);
-//		// Return a null string if no generation
-//		System.out.println("test");
-    }
+		for (MethodDeclaration method : cu.getTypes().get(0).getMethods() ) {
+			result.append(this.className + " : " );
+			if(method.getModifiers().contains(PUBLIC)){
+				result.append("+ ");
+		    }
+			result.append(method.getDeclarationAsString(false, false) + "\n");
+		}
+	}
+	
 }

@@ -10,9 +10,11 @@ import java.util.List;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.BodyDeclaration;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
 public class MyJavaParser {
 	
@@ -53,7 +55,28 @@ public class MyJavaParser {
 	private void parseClassType(){
 		
 		this.className = cu.getTypes().get(0).getNameAsString();
-		result.append("class ");
+		ClassOrInterfaceDeclaration myclass = (ClassOrInterfaceDeclaration) cu.getTypes().get(0);
+
+		for(ClassOrInterfaceType declaration : myclass.getExtendedTypes()) {
+			result.append(declaration.getNameAsString());
+			result.append(" <|-- ");
+			result.append(this.className);
+			result.append("\n");
+		}
+
+		for(ClassOrInterfaceType declaration : myclass.getImplementedTypes()) {
+			result.append(declaration.getNameAsString());
+			result.append(" <|.. ");
+			result.append(this.className);
+			result.append("\n");
+		}
+		
+		if(myclass.isInterface()){
+			result.append("interface ");
+		}else{
+			result.append("class ");
+			
+		}
 		result.append(this.className);
 		result.append("\n");
 	}

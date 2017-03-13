@@ -7,7 +7,7 @@ import java_uml_parser.MyJavaParser;
 public class MyTest {
 	public static void main(String[] args) throws FileNotFoundException{
 		String directory = "/Users/bondk/Dropbox/SJSU/CMPE202/00_peronsal_project"
-				+ "/cmpe202-java-uml-parser/java-uml-parser/src/main/resources/uml-parser-test-3/ClassA.java";
+				+ "/cmpe202-java-uml-parser/java-uml-parser/src/main/resources/uml-parser-test-3/ClassB.java";
 		MyJavaParser par = new MyJavaParser(directory);
 		StringBuilder sb = par.getParsedFile();
 		System.out.println(sb.toString());

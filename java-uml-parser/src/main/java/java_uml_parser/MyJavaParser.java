@@ -46,6 +46,7 @@ public class MyJavaParser {
 		parseClassType();
 		parseAttributes();
 		parseMethods();
+
 	}
 	
 	public StringBuilder getParsedFile(){

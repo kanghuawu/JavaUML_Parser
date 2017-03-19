@@ -23,7 +23,7 @@ public class MyJavaParser {
 	private String className;
 	private FileInputStream in = null;
 	private CompilationUnit cu;
-	private StringBuilder result;
+	private StringBuilder result = new StringBuilder();;
 	
 	public MyJavaParser(String directory) {
 		this.javaDir = directory;
@@ -34,13 +34,11 @@ public class MyJavaParser {
 			if (this.in != null) {
 				this.in.close();
 		    }
-		}catch (FileNotFoundException e){
-			System.out.println(e.getMessage());
-		} catch (IOException e) {
+		}catch (IOException e){
 			System.out.println(e.getMessage());
 		}
 		
-		result = new StringBuilder();
+		
 		
 		
 		parseClassType();
@@ -54,6 +52,21 @@ public class MyJavaParser {
 	}
 	
 	private void parseClassType(){
+		
+		
+	}
+	
+	private void parseAttributes(){
+
+		
+	}
+	
+	private void parseMethods(){
+		
+		
+	}
+	
+	public String toString(){
 		
 		this.className = cu.getTypes().get(0).getNameAsString();
 		ClassOrInterfaceDeclaration myclass = (ClassOrInterfaceDeclaration) cu.getTypes().get(0);
@@ -80,10 +93,7 @@ public class MyJavaParser {
 		}
 		result.append(this.className);
 		result.append("\n");
-	}
-	
-	private void parseAttributes(){
-
+		
 		for (FieldDeclaration field : cu.getTypes().get(0).getFields() ) {
 			if(field.getModifiers().contains(PUBLIC)){
 				result.append(this.className + " : + ");
@@ -94,9 +104,6 @@ public class MyJavaParser {
 		    }
 			result.append(field.getCommonType() + " " + field.getVariables().get(0) + "\n");
 		}
-	}
-	
-	private void parseMethods(){
 		
 		for (MethodDeclaration method : cu.getTypes().get(0).getMethods() ) {
 			result.append(this.className + " : " );
@@ -105,6 +112,7 @@ public class MyJavaParser {
 		    }
 			result.append(method.getDeclarationAsString(false, false) + "\n");
 		}
+		return result.toString();
 	}
 	
 }

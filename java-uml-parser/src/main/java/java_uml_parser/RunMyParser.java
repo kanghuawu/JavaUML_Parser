@@ -13,22 +13,23 @@ public class RunMyParser {
 		StringBuilder sb = new StringBuilder();
 		for(String javaFile : fileDir.getJavaFiles()){
 			MyJavaParser javaParser = new MyJavaParser(javaFile);
-			sb.append(javaParser.getParsedFile());
+			sb.append(javaParser.toString());
 		}
 		
 		sb.insert(0, "@startuml\n");
+		sb.append("skinparam classAttributeIconSize 0\n");
 		sb.append("@enduml\n");
 		System.out.println(sb.toString());
 		
 		
-		String pngDir = "/Users/bondk/Dropbox/SJSU/CMPE202/00_peronsal_project"
-				+ "/cmpe202-java-uml-parser/java-uml-parser/src/main/resources/output.png";
-		OutputStream png = new FileOutputStream(pngDir);
-		SourceStringReader reader = new SourceStringReader(sb.toString());
-		// Write the first image to "png"
-		String desc = reader.generateImage(png);
-		System.out.println(desc);
-		// Return a null string if no generation
+//		String pngDir = "/Users/bondk/Dropbox/SJSU/CMPE202/00_peronsal_project"
+//				+ "/cmpe202-java-uml-parser/java-uml-parser/src/main/resources/output.png";
+//		OutputStream png = new FileOutputStream(pngDir);
+//		SourceStringReader reader = new SourceStringReader(sb.toString());
+//		// Write the first image to "png"
+//		String desc = reader.generateImage(png);
+//		System.out.println(desc);
+//		// Return a null string if no generation
 
 	}
 }

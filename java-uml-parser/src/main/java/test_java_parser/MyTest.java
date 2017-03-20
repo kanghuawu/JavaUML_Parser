@@ -1,56 +1,58 @@
 package test_java_parser;
 
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.util.Optional;
+import java.util.List;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.TypeDeclaration;
+import com.github.javaparser.ast.expr.FieldAccessExpr;
+
+
 
 public class MyTest {
 	public static void main(String[] args) throws FileNotFoundException{
 		
-		CompilationUnit compilationUnit = JavaParser.parse("class A { }");
-		Optional<ClassOrInterfaceDeclaration> classA = compilationUnit.getClassByName("A");
-		System.out.println(classA.toString());
-		
-//		String directory = "/Users/bondk/Dropbox/SJSU/CMPE202/00_peronsal_project"
-//				+ "/cmpe202-java-uml-parser/java-uml-parser/src/main/resources/uml-parser-test-3/ClassB.java";
-//		MyJavaParser par = new MyJavaParser(directory);
-//		StringBuilder sb = par.getParsedFile();
-//		System.out.println(sb.toString());
-		
-//		FileInputStream file = new FileInputStream(directory);
-//		CompilationUnit compilationUnit = JavaParser.parse(file);
-//		
-//		Stream<FieldDeclaration> attributeNodes = compilationUnit.getNodesByType(FieldDeclaration.class).stream().filter(f -> f.getModifiers().contains(Modifier.PUBLIC) || f.getModifiers().contains(Modifier.PRIVATE));
-//		attributeNodes.forEach(f -> System.out.println(f.getCommonType() + " " +  f.getVariables().get(0)));
-		
-//		attributeNodes.forEach(f -> System.out.println(f.getVariables()));
-//		for(CompilationUnit cu : java){
-////			System.out.println(cu.toString());
-//			Stream<ClassOrInterfaceDeclaration> result = cu.getNodesByType(ClassOrInterfaceDeclaration.class).stream()
-//					.filter(f -> f.getModifiers().contains(Modifier.PUBLIC) );
-//			result.forEach(f -> System.out.println(f.getImplementedTypes().get(0)));
-////			System.out.println(cu.getClassByName("A"));
-////			new MethodVisitor().visit(cu, null);
-//		}
-		
-		
-		
-		
-		
-//		String dir = "/Users/bondk/Dropbox/SJSU/CMPE202/00_peronsal_project/cmpe202-java-uml-parser/java-uml-parser/src/main/resources/test.png";
-//		OutputStream png = new FileOutputStream(dir);
-//		String source = "@startuml\n";
-//		source += "nf -> sixty_seven : is\n";
-//		source += "@enduml\n";
-//
-//		SourceStringReader reader = new SourceStringReader(source);
-//		// Write the first image to "png"
-//		String desc = reader.generateImage(png);
-//		System.out.println(desc);
-//		// Return a null string if no generation
-//		System.out.println("test");
+		String dir = "/Users/bondk/Dropbox/SJSU/CMPE202/00_peronsal_project/"
+    			+ "cmpe202-java-uml-parser/java-uml-parser/src/main/resources/test.java";
+        FileInputStream in = new FileInputStream(dir);
+
+        // parse the file
+        CompilationUnit cu = JavaParser.parse(in);
+
+        // prints the resulting compilation unit to default system output
+//        System.out.println(cu.getNodesByType(ConstructorDeclaration.class).get(0).getDeclarationAsString(false, false));
+        int n = 0;
+        for(TypeDeclaration typeDec : cu.getTypes()){
+//        	System.out.println(n++);
+//        	System.out.println(typeDec.getNameAsString());
+        	//field
+        	System.out.println("field");
+        	List<FieldDeclaration> fields = typeDec.getFields();
+        	for(FieldDeclaration field : fields){
+//        		System.out.println(field.getNodesByType(ClassOrInterfaceType.class));
+//        		System.out.println(field.getElementType().getNodesByType(ExpressionStmt.class));
+//        		System.out.println(field.getNodesByType(WildcardType.class));
+        	}
+        	//method
+        	System.out.println("method");
+        	List<MethodDeclaration> methods = typeDec.getMethods();
+        	for(MethodDeclaration method : methods){
+//        		System.out.println(method.getDeclarationAsString(true, true, false)); //public, String
+        		System.out.println(method.getNodesByType(FieldAccessExpr.class));
+        		try{
+//        			System.out.println(method.getParameter(0).getType());
+//        			System.out.println(method.getNodesByType(Parameter.class).get(0).getName());
+//        			System.out.println(method.getNodesByType(Parameter.class).get(0).getType());
+        		}catch(IndexOutOfBoundsException e){
+        			System.out.println("out of bound");
+        		}
+        	}
+        }
+        
+        
 	}
 }

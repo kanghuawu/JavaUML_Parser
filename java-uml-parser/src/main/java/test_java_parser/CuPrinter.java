@@ -9,7 +9,10 @@ public class CuPrinter {
 
     public static void main(String[] args) throws Exception {
         // creates an input stream for the file to be parsed
-        FileInputStream in = new FileInputStream("/Users/bondk/Dropbox/SJSU/CMPE202/00_peronsal_project/cmpe202-java-uml-parser/java-uml-parser/src/main/resources/uml-parser-test-4/ConcreteObserver.java");
+    	String dir = "/Users/bondk/Dropbox/SJSU/CMPE202/00_peronsal_project/"
+    			+ "cmpe202-java-uml-parser/java-uml-parser/src/main/resources/uml-parser-test-4"
+    			+ "/ConcreteObserver.java";
+        FileInputStream in = new FileInputStream(dir);
 
         // parse the file
         CompilationUnit cu = JavaParser.parse(in);

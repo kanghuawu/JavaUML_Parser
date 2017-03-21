@@ -6,6 +6,7 @@ import static com.github.javaparser.ast.Modifier.PUBLIC;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import com.github.javaparser.JavaParser;
@@ -22,8 +23,7 @@ public class MyJavaParser {
 
 	private String className;
 	private CompilationUnit cu;
-	private List<ClassOrInterfaceType> use = new ArrayList<ClassOrInterfaceType>();
-	private List<ClassOrInterfaceType> useMany = new ArrayList<ClassOrInterfaceType>();
+	private HashMap<String, String> use = new HashMap<String, String>();
 	private List<ClassOrInterfaceType> useInMethod = new ArrayList<ClassOrInterfaceType>();
 	
 	
@@ -64,12 +64,22 @@ public class MyJavaParser {
 			
 			List<ClassOrInterfaceType> obj = field.getVariable(0).getNodesByType(ClassOrInterfaceType.class);
 			if(obj.size() == 2){
-				useMany.add(obj.get(1));
+				setUse(obj.toString(), "*");
 			}else if(obj.size() == 1){
-				use.add(obj.get(1));
+				setUse(obj.toString(), "");
 			}
 //			System.out.println();
 		}
+	}
+	
+	private void setUse(String type, String count){
+		if(count.equals("*") || !use.containsKey(type)){
+			use.put(type, count);
+		}
+	}
+	
+	public HashMap<String, String> getUse(){
+		return use;
 	}
 	
 	private void parseMethods(){
@@ -100,7 +110,6 @@ public class MyJavaParser {
 			result.append("interface ");
 		}else{
 			result.append("class ");
-			
 		}
 		result.append(this.className);
 		result.append("\n");

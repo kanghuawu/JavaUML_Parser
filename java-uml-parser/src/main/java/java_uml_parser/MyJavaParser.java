@@ -1,54 +1,48 @@
 package java_uml_parser;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import static com.github.javaparser.ast.Modifier.*;
+import static com.github.javaparser.ast.Modifier.PRIVATE;
+import static com.github.javaparser.ast.Modifier.PUBLIC;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.body.TypeDeclaration;
+import com.github.javaparser.ast.stmt.ExpressionStmt;
+import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
 public class MyJavaParser {
 	
 
-	private String javaDir;
 	private String className;
-	private FileInputStream in = null;
 	private CompilationUnit cu;
-	private StringBuilder result = new StringBuilder();;
+	private List<ClassOrInterfaceType> use = new ArrayList<ClassOrInterfaceType>();
+	private List<ClassOrInterfaceType> useMany = new ArrayList<ClassOrInterfaceType>();
+	private List<ClassOrInterfaceType> useInMethod = new ArrayList<ClassOrInterfaceType>();
+	
 	
 	public MyJavaParser(String directory) {
-		this.javaDir = directory;
 		
 		try{
-			this.in = new FileInputStream(directory);
-			this.cu = JavaParser.parse(this.in);
-			if (this.in != null) {
-				this.in.close();
+			FileInputStream in = new FileInputStream(directory);
+			this.cu = JavaParser.parse(in);
+			if (in != null) {
+				in.close();
 		    }
 		}catch (IOException e){
 			System.out.println(e.getMessage());
 		}
-		
-		
-		
-		
+
 		parseClassType();
 		parseAttributes();
 		parseMethods();
 
-	}
-	
-	public StringBuilder getParsedFile(){
-		return result;
 	}
 	
 	private void parseClassType(){
@@ -57,8 +51,25 @@ public class MyJavaParser {
 	}
 	
 	private void parseAttributes(){
-
 		
+		// find getter and setter
+		for (FieldDeclaration field : cu.getTypes().get(0).getFields() ){
+			MethodDeclaration getter = hasGetter( field);
+			MethodDeclaration setter = hasSetter( field);
+			if(getter != null && setter != null) {
+				getter.remove();
+				setter.remove();
+				field.setModifiers(PUBLIC.toEnumSet());
+			}
+			
+			List<ClassOrInterfaceType> obj = field.getVariable(0).getNodesByType(ClassOrInterfaceType.class);
+			if(obj.size() == 2){
+				useMany.add(obj.get(1));
+			}else if(obj.size() == 1){
+				use.add(obj.get(1));
+			}
+//			System.out.println();
+		}
 	}
 	
 	private void parseMethods(){
@@ -67,7 +78,7 @@ public class MyJavaParser {
 	}
 	
 	public String toString(){
-		
+		StringBuilder result = new StringBuilder();
 		this.className = cu.getTypes().get(0).getNameAsString();
 		ClassOrInterfaceDeclaration myclass = (ClassOrInterfaceDeclaration) cu.getTypes().get(0);
 
@@ -113,6 +124,27 @@ public class MyJavaParser {
 			result.append(method.getDeclarationAsString(false, false) + "\n");
 		}
 		return result.toString();
+	}
+	
+	private MethodDeclaration hasGetter(FieldDeclaration field){
+		for( MethodDeclaration method : cu.getTypes().get(0).getMethods() ){
+			List<ReturnStmt> ret = method.getNodesByType(ReturnStmt.class);
+			if(ret.size() == 1 && ret.get(0).toString().indexOf(field.getVariable(0).toString()) != -1 && method.getNameAsString().indexOf("get") == 0) {
+				return method;
+			}
+		}
+		return null;
+	}
+	
+	private MethodDeclaration hasSetter(FieldDeclaration field){
+		for( MethodDeclaration method : cu.getTypes().get(0).getMethods() ){
+			List<ExpressionStmt> expression = method.getNodesByType(ExpressionStmt.class);
+			if(expression.size() == 1 && expression.get(0).toString().indexOf(field.getVariable(0).toString()) != -1 && method.getNameAsString().indexOf("set") == 0) {
+				return method;
+			}
+		}
+		return null;
+
 	}
 	
 }

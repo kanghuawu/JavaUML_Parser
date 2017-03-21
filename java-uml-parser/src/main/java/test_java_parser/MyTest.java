@@ -35,14 +35,14 @@ public class MyTest {
         	for(FieldDeclaration field : fields){
 //        		System.out.println(field.getNodesByType(ClassOrInterfaceType.class));
 //        		System.out.println(field.getElementType().getNodesByType(ExpressionStmt.class));
-//        		System.out.println(field.getNodesByType(WildcardType.class));
+        		System.out.println(field.getVariable(0));
         	}
         	//method
         	System.out.println("method");
         	List<MethodDeclaration> methods = typeDec.getMethods();
         	for(MethodDeclaration method : methods){
 //        		System.out.println(method.getDeclarationAsString(true, true, false)); //public, String
-        		System.out.println(method.getNodesByType(FieldAccessExpr.class));
+//        		System.out.println(method.getNodesByType(FieldAccessExpr.class));
         		try{
 //        			System.out.println(method.getParameter(0).getType());
 //        			System.out.println(method.getNodesByType(Parameter.class).get(0).getName());

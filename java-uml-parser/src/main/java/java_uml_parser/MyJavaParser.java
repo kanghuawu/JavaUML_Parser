@@ -5,8 +5,8 @@ import static com.github.javaparser.ast.Modifier.PUBLIC;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import com.github.javaparser.JavaParser;
@@ -14,6 +14,7 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
@@ -21,12 +22,13 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 public class MyJavaParser {
 	
 
-	private String className;
 	private CompilationUnit cu;
 	private HashMap<String, String> use = new HashMap<String, String>();
-	private List<ClassOrInterfaceType> useInMethod = new ArrayList<ClassOrInterfaceType>();
+	private HashSet<String> useInMethod = new HashSet<String>();
 	
-	
+	public MyJavaParser(){
+		
+	}
 	public MyJavaParser(String directory) {
 		
 		try{
@@ -38,7 +40,7 @@ public class MyJavaParser {
 		}catch (IOException e){
 			System.out.println(e.getMessage());
 		}
-
+		
 		parseClassType();
 		parseAttributes();
 		parseMethods();
@@ -46,14 +48,15 @@ public class MyJavaParser {
 	}
 	
 	private void parseClassType(){
-		
-		
 	}
 	
+	public String getName(){
+	return cu.getType(0).getNameAsString();
+}
+	
 	private void parseAttributes(){
-		
-		// find getter and setter
 		for (FieldDeclaration field : cu.getTypes().get(0).getFields() ){
+			// find getter and setter then set according attribute to public
 			MethodDeclaration getter = hasGetter( field);
 			MethodDeclaration setter = hasSetter( field);
 			if(getter != null && setter != null) {
@@ -62,13 +65,13 @@ public class MyJavaParser {
 				field.setModifiers(PUBLIC.toEnumSet());
 			}
 			
+			// find out whether this object uses other objects and their cardinalities
 			List<ClassOrInterfaceType> obj = field.getVariable(0).getNodesByType(ClassOrInterfaceType.class);
 			if(obj.size() == 2){
-				setUse(obj.toString(), "*");
+				setUse(obj.get(1).toString(), "*");
 			}else if(obj.size() == 1){
-				setUse(obj.toString(), "");
+				setUse(obj.get(0).toString(), "");
 			}
-//			System.out.println();
 		}
 	}
 	
@@ -83,56 +86,15 @@ public class MyJavaParser {
 	}
 	
 	private void parseMethods(){
-		
-		
+		for (MethodDeclaration method : cu.getTypes().get(0).getMethods() ) {
+			if(method.getModifiers().contains(PUBLIC) ){
+				for(Parameter parameter : method.getParameters()) useInMethod.add(parameter.getType().toString());
+		    }
+		}
 	}
 	
-	public String toString(){
-		StringBuilder result = new StringBuilder();
-		this.className = cu.getTypes().get(0).getNameAsString();
-		ClassOrInterfaceDeclaration myclass = (ClassOrInterfaceDeclaration) cu.getTypes().get(0);
-
-		for(ClassOrInterfaceType declaration : myclass.getExtendedTypes()) {
-			result.append(declaration.getNameAsString());
-			result.append(" <|-- ");
-			result.append(this.className);
-			result.append("\n");
-		}
-
-		for(ClassOrInterfaceType declaration : myclass.getImplementedTypes()) {
-			result.append(declaration.getNameAsString());
-			result.append(" <|.. ");
-			result.append(this.className);
-			result.append("\n");
-		}
-		
-		if(myclass.isInterface()){
-			result.append("interface ");
-		}else{
-			result.append("class ");
-		}
-		result.append(this.className);
-		result.append("\n");
-		
-		for (FieldDeclaration field : cu.getTypes().get(0).getFields() ) {
-			if(field.getModifiers().contains(PUBLIC)){
-				result.append(this.className + " : + ");
-		    }else if(field.getModifiers().contains(PRIVATE)){
-		    	result.append(this.className + " : - ");
-		    }else{
-		    	continue;
-		    }
-			result.append(field.getCommonType() + " " + field.getVariables().get(0) + "\n");
-		}
-		
-		for (MethodDeclaration method : cu.getTypes().get(0).getMethods() ) {
-			result.append(this.className + " : " );
-			if(method.getModifiers().contains(PUBLIC)){
-				result.append("+ ");
-		    }
-			result.append(method.getDeclarationAsString(false, false) + "\n");
-		}
-		return result.toString();
+	private HashSet<String> getUseInMethod(){
+		return useInMethod;
 	}
 	
 	private MethodDeclaration hasGetter(FieldDeclaration field){
@@ -153,7 +115,53 @@ public class MyJavaParser {
 			}
 		}
 		return null;
-
 	}
 	
+	public String toString(){
+		StringBuilder result = new StringBuilder();
+		String name = cu.getTypes().get(0).getNameAsString();
+		ClassOrInterfaceDeclaration myclass = (ClassOrInterfaceDeclaration) cu.getTypes().get(0);
+
+		for(ClassOrInterfaceType declaration : myclass.getExtendedTypes()) {
+			result.append(declaration.getNameAsString());
+			result.append(" <|-- ");
+			result.append(name);
+			result.append("\n");
+		}
+
+		for(ClassOrInterfaceType declaration : myclass.getImplementedTypes()) {
+			result.append(declaration.getNameAsString());
+			result.append(" <|.. ");
+			result.append(name);
+			result.append("\n");
+		}
+		
+		if(myclass.isInterface()){
+			result.append("interface ");
+		}else{
+			result.append("class ");
+		}
+		result.append(name);
+		result.append("\n");
+		
+		for (FieldDeclaration field : cu.getTypes().get(0).getFields() ) {
+			if(field.getModifiers().contains(PUBLIC)){
+				result.append(name + " : + ");
+		    }else if(field.getModifiers().contains(PRIVATE)){
+		    	result.append(name + " : - ");
+		    }else{
+		    	continue;
+		    }
+			result.append(field.getCommonType() + " " + field.getVariables().get(0) + "\n");
+		}
+		
+		for (MethodDeclaration method : cu.getTypes().get(0).getMethods() ) {
+			result.append(name + " : " );
+			if(method.getModifiers().contains(PUBLIC)){
+				result.append("+ ");
+		    }
+			result.append(method.getDeclarationAsString(false, false) + "\n");
+		}
+		return result.toString();
+	}
 }

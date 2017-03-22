@@ -76,8 +76,8 @@ public class MyJavaParser {
 				storeObjectCardinality(obj.get(0).toString(), "");
 			}
 		}
-		System.out.println(this.getName());
-		System.out.println(use);
+//		System.out.println(this.getName());
+//		System.out.println(use);
 	}
 	
 	private void storeObjectCardinality(String type, String count){

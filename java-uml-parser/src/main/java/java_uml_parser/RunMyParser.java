@@ -31,14 +31,14 @@ public class RunMyParser {
 		System.out.println(sb.toString());
 		
 		
-//		String pngDir = "/Users/bondk/Dropbox/SJSU/CMPE202/00_peronsal_project"
-//				+ "/cmpe202-java-uml-parser/java-uml-parser/src/main/resources/output.png";
-//		OutputStream png = new FileOutputStream(pngDir);
-//		SourceStringReader reader = new SourceStringReader(sb.toString());
-//		// Write the first image to "png"
-//		String desc = reader.generateImage(png);
-//		System.out.println(desc);
-//		// Return a null string if no generation
+		String pngDir = "/Users/bondk/Dropbox/SJSU/CMPE202/00_peronsal_project"
+				+ "/cmpe202-java-uml-parser/java-uml-parser/src/main/resources/output.png";
+		OutputStream png = new FileOutputStream(pngDir);
+		SourceStringReader reader = new SourceStringReader(sb.toString());
+		// Write the first image to "png"
+		String desc = reader.generateImage(png);
+		System.out.println(desc);
+		// Return a null string if no generation
 	}
 	
 	private static String findUseRelation(List<MyJavaParser> totalObjects){
@@ -53,7 +53,17 @@ public class RunMyParser {
 				else{
 					
 					relation.append(objA.getName());
+					if(! objB.getUse().get(objA.getName()).isEmpty() ){
+						relation.append("\"");
+						relation.append(objB.getUse().get(objA.getName()));
+						relation.append("\"");
+					}
 					relation.append(" -- ");
+					if(! objA.getUse().get(objB.getName()).isEmpty() ){
+						relation.append("\"");
+						relation.append(objA.getUse().get(objB.getName()));
+						relation.append("\"");
+					}
 					relation.append(objB.getName());
 					relation.append("\n");
 				}
@@ -62,4 +72,6 @@ public class RunMyParser {
 		}
 		return relation.toString();
 	}
+	
+	
 }

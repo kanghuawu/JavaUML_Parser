@@ -1,7 +1,6 @@
 package java_uml_parser;
 
-import static com.github.javaparser.ast.Modifier.PRIVATE;
-import static com.github.javaparser.ast.Modifier.PUBLIC;
+import static com.github.javaparser.ast.Modifier.*;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -12,9 +11,11 @@ import java.util.List;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
+import com.github.javaparser.ast.expr.ClassExpr;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
@@ -41,20 +42,16 @@ public class MyJavaParser {
 			System.out.println(e.getMessage());
 		}
 		
-		parseClassType();
-		parseAttributes();
-		parseMethods();
-
-	}
-	
-	private void parseClassType(){
+		findPrivateAttriAndGetterSetter();
+		findOtherObjectInAttribute();
+		findOtherObjectInMethod();
 	}
 	
 	public String getName(){
-	return cu.getType(0).getNameAsString();
-}
+		return cu.getType(0).getNameAsString();
+	}
 	
-	private void parseAttributes(){
+	private void findPrivateAttriAndGetterSetter(){
 		for (FieldDeclaration field : cu.getTypes().get(0).getFields() ){
 			// find getter and setter then set according attribute to public
 			MethodDeclaration getter = hasGetter( field);
@@ -64,18 +61,26 @@ public class MyJavaParser {
 				setter.remove();
 				field.setModifiers(PUBLIC.toEnumSet());
 			}
-			
-			// find out whether this object uses other objects and their cardinalities
-			List<ClassOrInterfaceType> obj = field.getVariable(0).getNodesByType(ClassOrInterfaceType.class);
-			if(obj.size() == 2){
-				setUse(obj.get(1).toString(), "*");
-			}else if(obj.size() == 1){
-				setUse(obj.get(0).toString(), "");
-			}
 		}
 	}
 	
-	private void setUse(String type, String count){
+	private void findOtherObjectInAttribute(){
+		for (FieldDeclaration field : cu.getTypes().get(0).getFields() ){
+			// find out whether this object uses other objects and their cardinalities
+			List<ClassOrInterfaceType> obj = field.getVariable(0).getNodesByType(ClassOrInterfaceType.class);
+			if(obj.size() == 2){
+				field.remove();
+				storeObjectCardinality(obj.get(1).toString(), "*");
+			}else if(obj.size() == 1){
+				field.remove();
+				storeObjectCardinality(obj.get(0).toString(), "");
+			}
+		}
+		System.out.println(this.getName());
+		System.out.println(use);
+	}
+	
+	private void storeObjectCardinality(String type, String count){
 		if(count.equals("*") || !use.containsKey(type)){
 			use.put(type, count);
 		}
@@ -85,15 +90,29 @@ public class MyJavaParser {
 		return use;
 	}
 	
-	private void parseMethods(){
+	private void findOtherObjectInMethod(){
+		// find in constructor
+		for (ConstructorDeclaration constructor : cu.getNodesByType(ConstructorDeclaration.class)){
+			for(Parameter parameter : constructor.getParameters()) useInMethod.add(parameter.getType().toString());
+
+		}
+		// find in method parameters
 		for (MethodDeclaration method : cu.getTypes().get(0).getMethods() ) {
 			if(method.getModifiers().contains(PUBLIC) ){
-				for(Parameter parameter : method.getParameters()) useInMethod.add(parameter.getType().toString());
+				for(Parameter parameter : method.getParameters()) {
+					useInMethod.add(parameter.getType().toString());
+				}
 		    }
 		}
+		// find in expression statements
+		for(ExpressionStmt expression : cu.getNodesByType(ExpressionStmt.class)) {
+			for(ClassOrInterfaceType type : expression.getNodesByType(ClassOrInterfaceType.class))
+			useInMethod.add(type.toString());
+		}
+//		System.out.println(useInMethod);
 	}
 	
-	private HashSet<String> getUseInMethod(){
+	public HashSet<String> getUseInMethod(){
 		return useInMethod;
 	}
 	
@@ -162,6 +181,14 @@ public class MyJavaParser {
 		    }
 			result.append(method.getDeclarationAsString(false, false) + "\n");
 		}
+		
+		for(String use : useInMethod){
+			result.append(this.getName());
+			result.append(" --> ");
+			result.append(use);
+			result.append("\n");
+		}
+		
 		return result.toString();
 	}
 }

@@ -42,8 +42,8 @@ public class MyJavaParser {
 			System.out.println(e.getMessage());
 		}
 		
-		findPrivateAttriAndGetterSetter();
-		findOtherObjectInAttribute();
+		findPrivateFieldAndGetterSetter();
+		findClassOrInterfacetInField();
 		findOtherObjectInMethod();
 	}
 	
@@ -51,9 +51,13 @@ public class MyJavaParser {
 		return cu.getType(0).getNameAsString();
 	}
 	
-	private void findPrivateAttriAndGetterSetter(){
+	/*
+	 * Find field's getter and setter. If both are found, 
+	 * 1. remove getter and setter 2. set attribute to public
+	 */
+	private void findPrivateFieldAndGetterSetter(){
 		for (FieldDeclaration field : cu.getTypes().get(0).getFields() ){
-			// find getter and setter then set according attribute to public
+			
 			MethodDeclaration getter = hasGetter( field);
 			MethodDeclaration setter = hasSetter( field);
 			if(getter != null && setter != null) {
@@ -62,58 +66,6 @@ public class MyJavaParser {
 				field.setModifiers(PUBLIC.toEnumSet());
 			}
 		}
-	}
-	
-	private void findOtherObjectInAttribute(){
-		for (FieldDeclaration field : cu.getTypes().get(0).getFields() ){
-			// find out whether this object uses other objects and their cardinalities
-			List<ClassOrInterfaceType> obj = field.getVariable(0).getNodesByType(ClassOrInterfaceType.class);
-			if(obj.size() == 2){
-				field.remove();
-				storeObjectCardinality(obj.get(1).toString(), "*");
-			}else if(obj.size() == 1){
-				field.remove();
-				storeObjectCardinality(obj.get(0).toString(), "");
-			}
-		}
-//		System.out.println(this.getName());
-//		System.out.println(use);
-	}
-	
-	private void storeObjectCardinality(String type, String count){
-		if(count.equals("*") || !use.containsKey(type)){
-			use.put(type, count);
-		}
-	}
-	
-	public HashMap<String, String> getUse(){
-		return use;
-	}
-	
-	private void findOtherObjectInMethod(){
-		// find in constructor
-		for (ConstructorDeclaration constructor : cu.getNodesByType(ConstructorDeclaration.class)){
-			for(Parameter parameter : constructor.getParameters()) useInMethod.add(parameter.getType().toString());
-
-		}
-		// find in method parameters
-		for (MethodDeclaration method : cu.getTypes().get(0).getMethods() ) {
-			if(method.getModifiers().contains(PUBLIC) ){
-				for(Parameter parameter : method.getParameters()) {
-					useInMethod.add(parameter.getType().toString());
-				}
-		    }
-		}
-		// find in expression statements
-		for(ExpressionStmt expression : cu.getNodesByType(ExpressionStmt.class)) {
-			for(ClassOrInterfaceType type : expression.getNodesByType(ClassOrInterfaceType.class))
-			useInMethod.add(type.toString());
-		}
-//		System.out.println(useInMethod);
-	}
-	
-	public HashSet<String> getUseInMethod(){
-		return useInMethod;
 	}
 	
 	private MethodDeclaration hasGetter(FieldDeclaration field){
@@ -125,7 +77,6 @@ public class MyJavaParser {
 		}
 		return null;
 	}
-	
 	private MethodDeclaration hasSetter(FieldDeclaration field){
 		for( MethodDeclaration method : cu.getTypes().get(0).getMethods() ){
 			List<ExpressionStmt> expression = method.getNodesByType(ExpressionStmt.class);
@@ -134,6 +85,70 @@ public class MyJavaParser {
 			}
 		}
 		return null;
+	}
+	/* 
+	 * Find other classes or interfaces declared in field and store them into use
+	 */
+	private void findClassOrInterfacetInField(){
+		for (FieldDeclaration field : cu.getTypes().get(0).getFields() ){
+			// find out whether this object uses other objects and their cardinalities
+			List<ClassOrInterfaceType> obj = field.getVariable(0).getNodesByType(ClassOrInterfaceType.class);
+			
+			if(obj.size() == 2 && !obj.get(0).toString().equals("String")){
+				field.remove();
+				storeObjectCardinality(obj.get(1).toString(), "*");
+			}else if(obj.size() == 1 && !obj.get(0).toString().equals("String")){
+				field.remove();
+				storeObjectCardinality(obj.get(0).toString(), "");
+			}
+		}
+	}
+	
+	private void storeObjectCardinality(String type, String count){
+		if(count.equals("*") || !use.containsKey(type)){
+			use.put(type, count);
+		}
+	}
+	
+	public HashMap<String, String> getUse(){
+		return use;
+	}
+	private void findOtherObjectInMethod(){
+		// find in constructor
+		for (ConstructorDeclaration constructor : cu.getNodesByType(ConstructorDeclaration.class)){
+			for(Parameter parameter : constructor.getParameters()) {
+				useInMethod.add(parameter.getType().toString());
+//				constructor.remove();
+//				System.out.println("constructor removed");
+			}
+			
+		}
+		// find in method parameters
+		for (MethodDeclaration method : cu.getTypes().get(0).getMethods() ) {
+			if(method.getModifiers().contains(PUBLIC) ){
+				for(Parameter parameter : method.getParameters()) {
+					useInMethod.add(parameter.getType().toString());
+					method.remove();
+					System.out.println("method removed");
+				}
+		    }
+		}
+		// find in expression statements
+		for(ExpressionStmt expression : cu.getNodesByType(ExpressionStmt.class)) {
+			for(ClassOrInterfaceType type : expression.getNodesByType(ClassOrInterfaceType.class)){
+				useInMethod.add(type.toString());
+				expression.remove();
+				System.out.println("expression removed");
+			}
+		}
+		
+		useInMethod.remove("String");
+		useInMethod.remove("String[]");
+//		System.out.println(useInMethod);
+	}
+	
+	public HashSet<String> getUseInMethod(){
+		return useInMethod;
 	}
 	
 	public String toString(){
@@ -184,7 +199,7 @@ public class MyJavaParser {
 		
 		for(String use : useInMethod){
 			result.append(this.getName());
-			result.append(" --> ");
+			result.append(" ..> ");
 			result.append(use);
 			result.append("\n");
 		}

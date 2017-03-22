@@ -11,7 +11,7 @@ import net.sourceforge.plantuml.SourceStringReader;
 public class RunMyParser {
 	public static void main(String[] args) throws IOException{
 		String directory = "/Users/bondk/Dropbox/SJSU/CMPE202/00_peronsal_project"
-				+ "/cmpe202-java-uml-parser/java-uml-parser/src/main/resources/uml-parser-test-1";
+				+ "/cmpe202-java-uml-parser/java-uml-parser/src/main/resources/uml-parser-test-5";
 		
 		fileFinder fileDir = new fileFinder(directory);
 		
@@ -53,13 +53,15 @@ public class RunMyParser {
 				else{
 					
 					relation.append(objA.getName());
-					if(! objB.getUse().get(objA.getName()).isEmpty() ){
+					System.out.println(objB.getUse());
+					System.out.println(objA.getUse());
+					if(!objB.getUse().isEmpty() && !objB.getUse().get(objA.getName()).isEmpty() ){
 						relation.append("\"");
 						relation.append(objB.getUse().get(objA.getName()));
 						relation.append("\"");
 					}
 					relation.append(" -- ");
-					if(! objA.getUse().get(objB.getName()).isEmpty() ){
+					if(!objA.getUse().isEmpty() && !objA.getUse().get(objB.getName()).isEmpty() ){
 						relation.append("\"");
 						relation.append(objA.getUse().get(objB.getName()));
 						relation.append("\"");
@@ -72,6 +74,4 @@ public class RunMyParser {
 		}
 		return relation.toString();
 	}
-	
-	
 }

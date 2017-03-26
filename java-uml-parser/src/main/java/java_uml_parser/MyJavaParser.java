@@ -22,11 +22,12 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
 public class MyJavaParser {
 	
-	private static final String TYPE_STRING_ARRAY = "String[]";
-	private static final String TYPE_STRING = "String";
+	
 	private CompilationUnit cu;
 	private HashMap<String, String> use = new HashMap<String, String>();
 	private HashSet<String> useInMethod = new HashSet<String>();
+	private static final String TYPE_STRING_ARRAY = "String[]";
+	private static final String TYPE_STRING = "String";
 	
 	public MyJavaParser(String directory) {
 		

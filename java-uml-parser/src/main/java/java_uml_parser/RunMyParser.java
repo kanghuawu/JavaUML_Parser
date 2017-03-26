@@ -13,18 +13,18 @@ public class RunMyParser {
 		String directory = "/Users/bondk/Dropbox/SJSU/CMPE202/00_peronsal_project"
 				+ "/cmpe202-java-uml-parser/java-uml-parser/src/main/resources/uml-parser-test-5";
 		
-		fileFinder fileDir = new fileFinder(directory);
-		
+		JavaFileFinder fileDir = new JavaFileFinder(directory);
+
 		List<MyJavaParser> totalObjects = new ArrayList<MyJavaParser>();
 		StringBuilder sb = new StringBuilder();
 		
 		for(String javaFile : fileDir.getJavaFiles()){
 			MyJavaParser javaParser = new MyJavaParser(javaFile);
 			totalObjects.add(javaParser);
-			sb.append(javaParser.toString());
+			sb.append(javaParser.getParsedResult());
 		}
 		
-		sb.append(findUseRelation(totalObjects));
+		sb.append(MyJavaParser.findUseRelation(totalObjects));
 		sb.insert(0, "@startuml\n");
 //		sb.append("skinparam classAttributeIconSize 0\n");
 		sb.append("@enduml\n");
@@ -39,39 +39,5 @@ public class RunMyParser {
 		String desc = reader.generateImage(png);
 		System.out.println(desc);
 		// Return a null string if no generation
-	}
-	
-	private static String findUseRelation(List<MyJavaParser> totalObjects){
-		StringBuilder relation = new StringBuilder();
-
-		int size = totalObjects.size();
-		for(int i = 0; i < size; i++){
-			for(int j = i + 1; j < size; j ++){
-				MyJavaParser objA = totalObjects.get(i);
-				MyJavaParser objB = totalObjects.get(j);
-				if(!objA.getUse().containsKey(objB.getName()) && !objB.getUse().containsKey(objA.getName())) continue;
-				else{
-					
-					relation.append(objA.getName());
-					System.out.println(objB.getUse());
-					System.out.println(objA.getUse());
-					if(!objB.getUse().isEmpty() && !objB.getUse().get(objA.getName()).isEmpty() ){
-						relation.append("\"");
-						relation.append(objB.getUse().get(objA.getName()));
-						relation.append("\"");
-					}
-					relation.append(" -- ");
-					if(!objA.getUse().isEmpty() && !objA.getUse().get(objB.getName()).isEmpty() ){
-						relation.append("\"");
-						relation.append(objA.getUse().get(objB.getName()));
-						relation.append("\"");
-					}
-					relation.append(objB.getName());
-					relation.append("\n");
-				}
-
-			}
-		}
-		return relation.toString();
 	}
 }

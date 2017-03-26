@@ -3,6 +3,7 @@ package java_uml_parser;
 import static com.github.javaparser.ast.Modifier.*;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,43 +24,39 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 public class MyJavaParser {
 	
 
+	private static final String TYPE_STRING_ARRAY = "String[]";
+	private static final String TYPE_STRING = "String";
 	private CompilationUnit cu;
 	private HashMap<String, String> use = new HashMap<String, String>();
 	private HashSet<String> useInMethod = new HashSet<String>();
-	
-	public MyJavaParser(){
-		
-	}
+
 	public MyJavaParser(String directory) {
-		
-		try{
-			FileInputStream in = new FileInputStream(directory);
+
+		try (FileInputStream in = new FileInputStream(directory);) {
 			this.cu = JavaParser.parse(in);
-			if (in != null) {
-				in.close();
-		    }
-		}catch (IOException e){
-			System.out.println(e.getMessage());
+			if (this.cu != null) {
+				findPrivateFieldAndGetterSetter();
+				findClassOrInterfacetInField();
+				findOtherObjectInMethod();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		
-		findPrivateFieldAndGetterSetter();
-		findClassOrInterfacetInField();
-		findOtherObjectInMethod();
 	}
 	
 	public String getName(){
 		return cu.getType(0).getNameAsString();
 	}
 	
-	/*
+	/**
 	 * Find field's getter and setter. If both are found, 
 	 * 1. remove getter and setter 2. set attribute to public
 	 */
 	private void findPrivateFieldAndGetterSetter(){
 		for (FieldDeclaration field : cu.getTypes().get(0).getFields() ){
 			
-			MethodDeclaration getter = hasGetter( field);
-			MethodDeclaration setter = hasSetter( field);
+			MethodDeclaration getter = retrieveGetter( field);
+			MethodDeclaration setter = retrieveSetter( field);
 			if(getter != null && setter != null) {
 				getter.remove();
 				setter.remove();
@@ -68,7 +65,7 @@ public class MyJavaParser {
 		}
 	}
 	
-	private MethodDeclaration hasGetter(FieldDeclaration field){
+	private MethodDeclaration retrieveGetter(final FieldDeclaration field){
 		for( MethodDeclaration method : cu.getTypes().get(0).getMethods() ){
 			List<ReturnStmt> ret = method.getNodesByType(ReturnStmt.class);
 			if(ret.size() == 1 && ret.get(0).toString().indexOf(field.getVariable(0).toString()) != -1 && method.getNameAsString().indexOf("get") == 0) {
@@ -77,7 +74,7 @@ public class MyJavaParser {
 		}
 		return null;
 	}
-	private MethodDeclaration hasSetter(FieldDeclaration field){
+	private MethodDeclaration retrieveSetter(final FieldDeclaration field){
 		for( MethodDeclaration method : cu.getTypes().get(0).getMethods() ){
 			List<ExpressionStmt> expression = method.getNodesByType(ExpressionStmt.class);
 			if(expression.size() == 1 && expression.get(0).toString().indexOf(field.getVariable(0).toString()) != -1 && method.getNameAsString().indexOf("set") == 0) {
@@ -86,7 +83,8 @@ public class MyJavaParser {
 		}
 		return null;
 	}
-	/* 
+	
+	/** 
 	 * Find other classes or interfaces declared in field and store them into use
 	 */
 	private void findClassOrInterfacetInField(){
@@ -94,10 +92,10 @@ public class MyJavaParser {
 			// find out whether this object uses other objects and their cardinalities
 			List<ClassOrInterfaceType> obj = field.getVariable(0).getNodesByType(ClassOrInterfaceType.class);
 			
-			if(obj.size() == 2 && !obj.get(0).toString().equals("String")){
+			if(obj.size() == 2 && !obj.get(0).toString().equals(TYPE_STRING)){
 				field.remove();
 				storeObjectCardinality(obj.get(1).toString(), "*");
-			}else if(obj.size() == 1 && !obj.get(0).toString().equals("String")){
+			}else if(obj.size() == 1 && !obj.get(0).toString().equals(TYPE_STRING)){
 				field.remove();
 				storeObjectCardinality(obj.get(0).toString(), "");
 			}
@@ -142,8 +140,8 @@ public class MyJavaParser {
 			}
 		}
 		
-		useInMethod.remove("String");
-		useInMethod.remove("String[]");
+		useInMethod.remove(TYPE_STRING);
+		useInMethod.remove(TYPE_STRING_ARRAY);
 //		System.out.println(useInMethod);
 	}
 	
@@ -151,7 +149,7 @@ public class MyJavaParser {
 		return useInMethod;
 	}
 	
-	public String toString(){
+	public String getParsedResult(){
 		StringBuilder result = new StringBuilder();
 		String name = cu.getTypes().get(0).getNameAsString();
 		ClassOrInterfaceDeclaration myclass = (ClassOrInterfaceDeclaration) cu.getTypes().get(0);
@@ -205,5 +203,39 @@ public class MyJavaParser {
 		}
 		
 		return result.toString();
+	}
+
+	public static String findUseRelation(final List<MyJavaParser> totalObjects){
+		StringBuilder relation = new StringBuilder();
+	
+		int size = totalObjects.size();
+		for(int i = 0; i < size; i++){
+			for(int j = i + 1; j < size; j ++){
+				MyJavaParser objA = totalObjects.get(i);
+				MyJavaParser objB = totalObjects.get(j);
+				if(!objA.getUse().containsKey(objB.getName()) && !objB.getUse().containsKey(objA.getName())) continue;
+				else{
+					
+					relation.append(objA.getName());
+					System.out.println(objB.getUse());
+					System.out.println(objA.getUse());
+					if(!objB.getUse().isEmpty() && !objB.getUse().get(objA.getName()).isEmpty() ){
+						relation.append("\"");
+						relation.append(objB.getUse().get(objA.getName()));
+						relation.append("\"");
+					}
+					relation.append(" -- ");
+					if(!objA.getUse().isEmpty() && !objA.getUse().get(objB.getName()).isEmpty() ){
+						relation.append("\"");
+						relation.append(objA.getUse().get(objB.getName()));
+						relation.append("\"");
+					}
+					relation.append(objB.getName());
+					relation.append("\n");
+				}
+	
+			}
+		}
+		return relation.toString();
 	}
 }

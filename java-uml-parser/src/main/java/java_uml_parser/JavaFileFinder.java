@@ -5,12 +5,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class fileFinder {
+public class JavaFileFinder {
 
+	private static final String EXTENSION = ".java";
 	private String directory;
 	private List<String> javaFiles;
 	
-	public fileFinder(String directory){
+	public JavaFileFinder(String directory){
 		this.directory = directory;
 		findJavaFiles();
 	}
@@ -18,7 +19,7 @@ public class fileFinder {
 	public List<String> getJavaFiles(){
 		List<String> javaDir = new ArrayList<String>();
 		for(String fi : this.javaFiles){
-			javaDir.add(this.directory + "/" + fi);
+			javaDir.add(this.directory + File.separator + fi);
 		}
 		return javaDir;
 	}
@@ -28,13 +29,14 @@ public class fileFinder {
 		File dir = new File(this.directory);
 
 		for (File file : dir.listFiles()) {
-		    if (file.getName().endsWith((".java"))) {
+		    if (file.getName().endsWith((EXTENSION))) {
 		    	javaFiles.add(file.getName());
 		    }
 		  }
 		this.javaFiles = javaFiles;
 	}
 	
+	@Override
 	public String toString(){
 		StringBuilder sb = new StringBuilder();
 		sb.append("Directory: " + this.directory + "\n");

@@ -21,7 +21,7 @@ public class fileFinderTest {
 	public void test() {
 		String dir = "/Users/bondk/Dropbox/SJSU/CMPE202/00_peronsal_project"
 				+ "/cmpe202-java-uml-parser/java-uml-parser/src/main/resources/uml-parser-test-1";
-		fileFinder ff = new fileFinder(dir);
+		JavaFileFinder ff = new JavaFileFinder(dir);
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("Directory: ");
@@ -35,7 +35,7 @@ public class fileFinderTest {
 	public void test1() {
 		String dir = "/Users/bondk/Dropbox/SJSU/CMPE202/00_peronsal_project"
 				+ "/cmpe202-java-uml-parser/java-uml-parser/src/main/resources/uml-parser-test-2";
-		fileFinder ff = new fileFinder(dir);
+		JavaFileFinder ff = new JavaFileFinder(dir);
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("Directory: ");
@@ -49,7 +49,7 @@ public class fileFinderTest {
 	public void test2() {
 		String dir = "/Users/bondk/Dropbox/SJSU/CMPE202/00_peronsal_project"
 				+ "/cmpe202-java-uml-parser/java-uml-parser/src/main/resources/uml-parser-test-1";
-		fileFinder ff = new fileFinder(dir);
+		JavaFileFinder ff = new JavaFileFinder(dir);
 		
 		List<String> arr = new ArrayList<String>();
 		arr.add(dir + "/A.java");
@@ -63,7 +63,7 @@ public class fileFinderTest {
 	public void test3() {
 		String dir = "/Users/bondk/Dropbox/SJSU/CMPE202/00_peronsal_project"
 				+ "/cmpe202-java-uml-parser/java-uml-parser/src/main/resources/uml-parser-test-4";
-		fileFinder ff = new fileFinder(dir);
+		JavaFileFinder ff = new JavaFileFinder(dir);
 		
 		List<String> arr = new ArrayList<String>();
 		arr.add(dir + "/ConcreteObserver.java");

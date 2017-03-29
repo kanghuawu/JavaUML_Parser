@@ -1,6 +1,7 @@
 package java_uml_parser;
 
-import static com.github.javaparser.ast.Modifier.*;
+import static com.github.javaparser.ast.Modifier.PRIVATE;
+import static com.github.javaparser.ast.Modifier.PUBLIC;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -10,12 +11,12 @@ import java.util.List;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.ast.body.ConstructorDeclaration;
-import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.body.*;
+//import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
-import com.github.javaparser.ast.expr.ClassExpr;
+import com.github.javaparser.ast.expr.AssignExpr;
+import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
@@ -84,6 +85,7 @@ public class MyJavaParser {
 		}
 		return null;
 	}
+	
 	/* *
 	 * Find other classes or interfaces declared in field and store them into use
 	 */
@@ -113,32 +115,33 @@ public class MyJavaParser {
 	}
 	private void findOtherObjectInMethod(){
 		// find in constructor
-		for (ConstructorDeclaration constructor : cu.getNodesByType(ConstructorDeclaration.class)){
-			for(Parameter parameter : constructor.getParameters()) {
-				useInMethod.add(parameter.getType().toString());
-//				constructor.remove();
-//				System.out.println("constructor removed");
-			}
-			
-		}
+//		for (ConstructorDeclaration constructor : cu.getNodesByType(ConstructorDeclaration.class)){
+//			for(Parameter parameter : constructor.getParameters()) {
+//				useInMethod.add(parameter.getType().toString());
+////				constructor.remove();
+////				System.out.println("constructor removed");
+//			}
+//			
+//		}
 		// find in method parameters
 		for (MethodDeclaration method : cu.getTypes().get(0).getMethods() ) {
 			if(method.getModifiers().contains(PUBLIC) ){
 				for(Parameter parameter : method.getParameters()) {
 					useInMethod.add(parameter.getType().toString());
 					method.remove();
-					System.out.println("method removed");
+//					System.out.println("method removed");
 				}
 		    }
 		}
 		// find in expression statements
-		for(ExpressionStmt expression : cu.getNodesByType(ExpressionStmt.class)) {
-			for(ClassOrInterfaceType type : expression.getNodesByType(ClassOrInterfaceType.class)){
-				useInMethod.add(type.toString());
-				expression.remove();
-				System.out.println("expression removed");
-			}
-		}
+//		for(ExpressionStmt expression : cu.getNodesByType(ExpressionStmt.class)) {
+//			for(ClassOrInterfaceType type : expression.getNodesByType(ClassOrInterfaceType.class)){
+//				useInMethod.add(type.toString());
+//				System.out.println(type.toString());
+//				expression.remove();
+//				
+//			}
+//		}
 		
 		useInMethod.remove(TYPE_STRING);
 		useInMethod.remove(TYPE_STRING_ARRAY);
@@ -176,7 +179,12 @@ public class MyJavaParser {
 		result.append(name);
 		result.append("\n");
 		
+		System.out.println(cu.getTypes().get(0).getNameAsString());
+
 		for (FieldDeclaration field : cu.getTypes().get(0).getFields() ) {
+//			System.out.println(field.getElementType());
+//			System.out.println(field.getVariables().get(0));
+//			System.out.println(field.getNodesByType(ObjectCreationExpr.class));
 			if(field.getModifiers().contains(PUBLIC)){
 				result.append(name + " : + ");
 		    }else if(field.getModifiers().contains(PRIVATE)){
@@ -184,10 +192,18 @@ public class MyJavaParser {
 		    }else{
 		    	continue;
 		    }
-			result.append(field.getCommonType() + " " + field.getVariables().get(0) + "\n");
+			
+			if(field.getNodesByType(ObjectCreationExpr.class).size() != 0){
+				field.getNodesByType(ObjectCreationExpr.class).remove(0);
+//				System.out.println(field.);
+			}
+			
+			result.append(field.getVariable(0).getName() + " : " + field.getCommonType() + "\n");
 		}
 		
 		for (MethodDeclaration method : cu.getTypes().get(0).getMethods() ) {
+//			System.out.println(method.getDeclarationAsString());
+//			System.out.println(method.getParameters());
 			result.append(name + " : " );
 			if(method.getModifiers().contains(PUBLIC)){
 				result.append("+ ");
@@ -204,6 +220,7 @@ public class MyJavaParser {
 		
 		return result.toString();
 	}
+	
 	public static String findUseRelation(final List<MyJavaParser> totalObjects){
 		StringBuilder relation = new StringBuilder();
 
@@ -212,12 +229,13 @@ public class MyJavaParser {
 			for(int j = i + 1; j < size; j ++){
 				MyJavaParser objA = totalObjects.get(i);
 				MyJavaParser objB = totalObjects.get(j);
-				if(!objA.getUse().containsKey(objB.getName()) && !objB.getUse().containsKey(objA.getName())) continue;
+				if(!objA.getUse().containsKey(objB.getName()) && !objB.getUse().containsKey(objA.getName())){
+					continue;
+				}
 				else{
-					
 					relation.append(objA.getName());
-					System.out.println(objB.getUse());
-					System.out.println(objA.getUse());
+//					System.out.println(objB.getUse());
+//					System.out.println(objA.getUse());
 					if(!objB.getUse().isEmpty() && !objB.getUse().get(objA.getName()).isEmpty() ){
 						relation.append("\"");
 						relation.append(objB.getUse().get(objA.getName()));

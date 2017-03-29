@@ -11,14 +11,17 @@ import java.util.List;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
+import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
 
 public class MyJavaParser {
 	
@@ -200,17 +203,19 @@ public class MyJavaParser {
 			result.append(field.getVariable(0).getName() + " : " + field.getCommonType() + "\n");
 		}
 		
+		for(ConstructorDeclaration constructor : cu.getType(0).getNodesByType(ConstructorDeclaration.class)){
+			result.append(name + " : + " + constructor.getName() + "(");
+			result.append(getParameter(constructor));
+			result.append(")\n");
+		}
+		
 		for (MethodDeclaration method : cu.getTypes().get(0).getMethods() ) {
 			result.append(name + " : " );
 			if(method.getModifiers().contains(PUBLIC)){
 				result.append("+ ");
 		    }
 			result.append(method.getName() + "(");
-			for(Parameter par : method.getParameters()){
-				result.append(par.getName());
-				result.append(" : ");
-				result.append(par.getType());
-			}
+			result.append(getParameter(method));
 			result.append(") : " + method.getType() + "\n");
 		}
 		
@@ -221,6 +226,16 @@ public class MyJavaParser {
 			result.append("\n");
 		}
 		
+		return result.toString();
+	}
+	
+	private String getParameter(BodyDeclaration type){
+		StringBuilder result = new StringBuilder();
+		for(Parameter par : type.getNodesByType(Parameter.class)){
+			result.append(par.getName());
+			result.append(" : ");
+			result.append(par.getType());
+		}
 		return result.toString();
 	}
 	

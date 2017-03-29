@@ -11,11 +11,10 @@ import java.util.List;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.body.*;
-//import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
-import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
@@ -202,13 +201,17 @@ public class MyJavaParser {
 		}
 		
 		for (MethodDeclaration method : cu.getTypes().get(0).getMethods() ) {
-//			System.out.println(method.getDeclarationAsString());
-//			System.out.println(method.getParameters());
 			result.append(name + " : " );
 			if(method.getModifiers().contains(PUBLIC)){
 				result.append("+ ");
 		    }
-			result.append(method.getDeclarationAsString(false, false) + "\n");
+			result.append(method.getName() + "(");
+			for(Parameter par : method.getParameters()){
+				result.append(par.getName());
+				result.append(" : ");
+				result.append(par.getType());
+			}
+			result.append(") : " + method.getType() + "\n");
 		}
 		
 		for(String use : useInMethod){

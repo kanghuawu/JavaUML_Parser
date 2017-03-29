@@ -11,7 +11,7 @@ import net.sourceforge.plantuml.SourceStringReader;
 public class RunMyParser {
 	public static void main(String[] args) throws IOException{
 		String directory = "/Users/bondk/Dropbox/SJSU/CMPE202/peronsal_project"
-				+ "/cmpe202-java-uml-parser/java-uml-parser/src/main/resources/uml-parser-test-4";
+				+ "/cmpe202-java-uml-parser/java-uml-parser/src/main/resources/uml-parser-test-5";
 		
 		JavaFileFinder fileDir = new JavaFileFinder(directory);
 		

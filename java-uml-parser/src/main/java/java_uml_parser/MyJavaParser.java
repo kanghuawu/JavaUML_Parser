@@ -16,7 +16,6 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
-import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
@@ -38,14 +37,12 @@ public class MyJavaParser {
 			this.cu = JavaParser.parse(in);
 			if(this.cu != null){
 				findPrivateFieldAndGetterSetter();
-				findClassOrInterfacetInField();
-				findOtherObjectInMethod();
+				findAssociation();
+				findDepedency();
 			}
 		}catch (IOException e){
 			e.printStackTrace();
 		}
-		
-		
 	}
 	
 	public String getName(){
@@ -91,19 +88,22 @@ public class MyJavaParser {
 	/* *
 	 * Find other classes or interfaces declared in field and store them into use
 	 */
-	private void findClassOrInterfacetInField(){
+	private void findAssociation(){
 		for (FieldDeclaration field : cu.getTypes().get(0).getFields() ){
 			// find out whether this object uses other objects and their cardinalities
-			List<ClassOrInterfaceType> obj = field.getVariable(0).getNodesByType(ClassOrInterfaceType.class);
-			
-			if(obj.size() == 2 && !obj.get(0).toString().equals("String")){
+			List<ClassOrInterfaceType> type = field.getVariable(0).getNodesByType(ClassOrInterfaceType.class);
+			System.out.println(type);
+			if(type.get(0).toString().equals("String")){
+				continue;
+			}else if(type.size() == 2){
 				field.remove();
-				storeObjectCardinality(obj.get(1).toString(), "*");
-			}else if(obj.size() == 1 && !obj.get(0).toString().equals("String")){
+				storeObjectCardinality(type.get(1).toString(), "*");
+			}else if(type.size() == 1){
 				field.remove();
-				storeObjectCardinality(obj.get(0).toString(), "");
+				storeObjectCardinality(type.get(0).toString(), "");
 			}
 		}
+		System.out.println(use);
 	}
 	
 	private void storeObjectCardinality(String type, String count){
@@ -115,39 +115,44 @@ public class MyJavaParser {
 	public HashMap<String, String> getUse(){
 		return use;
 	}
-	private void findOtherObjectInMethod(){
-		// find in constructor
-//		for (ConstructorDeclaration constructor : cu.getNodesByType(ConstructorDeclaration.class)){
-//			for(Parameter parameter : constructor.getParameters()) {
-//				useInMethod.add(parameter.getType().toString());
-////				constructor.remove();
-////				System.out.println("constructor removed");
-//			}
-//			
-//		}
-		// find in method parameters
-		for (MethodDeclaration method : cu.getTypes().get(0).getMethods() ) {
-			if(method.getModifiers().contains(PUBLIC) ){
-				for(Parameter parameter : method.getParameters()) {
-					useInMethod.add(parameter.getType().toString());
-					method.remove();
-//					System.out.println("method removed");
-				}
-		    }
-		}
-		// find in expression statements
-//		for(ExpressionStmt expression : cu.getNodesByType(ExpressionStmt.class)) {
-//			for(ClassOrInterfaceType type : expression.getNodesByType(ClassOrInterfaceType.class)){
-//				useInMethod.add(type.toString());
-//				System.out.println(type.toString());
-//				expression.remove();
-//				
-//			}
-//		}
+	private void findDepedency(){
+		if(!((ClassOrInterfaceDeclaration) cu.getType(0)).isInterface()){
+			
 		
-		useInMethod.remove(TYPE_STRING);
-		useInMethod.remove(TYPE_STRING_ARRAY);
-//		System.out.println(useInMethod);
+			// find in constructor
+	//		for (ConstructorDeclaration constructor : cu.getNodesByType(ConstructorDeclaration.class)){
+	//			for(Parameter parameter : constructor.getParameters()) {
+	//				useInMethod.add(parameter.getType().toString());
+	////				constructor.remove();
+	////				System.out.println("constructor removed");
+	//			}
+	//			
+	//		}
+			// find in method parameters
+			for (MethodDeclaration method : cu.getType(0).getMethods() ) {
+				
+				if(method.getModifiers().contains(PUBLIC) ){
+					for(Parameter parameter : method.getParameters()) {
+						useInMethod.add(parameter.getType().toString());
+						method.remove();
+	//					System.out.println("method removed");
+					}
+			    }
+			}
+			// find in expression statements
+	//		for(ExpressionStmt expression : cu.getNodesByType(ExpressionStmt.class)) {
+	//			for(ClassOrInterfaceType type : expression.getNodesByType(ClassOrInterfaceType.class)){
+	//				useInMethod.add(type.toString());
+	//				System.out.println(type.toString());
+	//				expression.remove();
+	//				
+	//			}
+	//		}
+			
+			useInMethod.remove(TYPE_STRING);
+			useInMethod.remove(TYPE_STRING_ARRAY);
+	//		System.out.println(useInMethod);
+		}
 	}
 	
 	public HashSet<String> getUseInMethod(){
@@ -180,8 +185,6 @@ public class MyJavaParser {
 		}
 		result.append(name);
 		result.append("\n");
-		
-		System.out.println(cu.getTypes().get(0).getNameAsString());
 
 		for (FieldDeclaration field : cu.getTypes().get(0).getFields() ) {
 //			System.out.println(field.getElementType());
@@ -205,7 +208,7 @@ public class MyJavaParser {
 		
 		for(ConstructorDeclaration constructor : cu.getType(0).getNodesByType(ConstructorDeclaration.class)){
 			result.append(name + " : + " + constructor.getName() + "(");
-			result.append(getParameter(constructor));
+			result.append(formatParameterAndType(constructor));
 			result.append(")\n");
 		}
 		
@@ -215,7 +218,7 @@ public class MyJavaParser {
 				result.append("+ ");
 		    }
 			result.append(method.getName() + "(");
-			result.append(getParameter(method));
+			result.append(formatParameterAndType(method));
 			result.append(") : " + method.getType() + "\n");
 		}
 		
@@ -229,7 +232,7 @@ public class MyJavaParser {
 		return result.toString();
 	}
 	
-	private String getParameter(BodyDeclaration type){
+	private String formatParameterAndType(BodyDeclaration type){
 		StringBuilder result = new StringBuilder();
 		for(Parameter par : type.getNodesByType(Parameter.class)){
 			result.append(par.getName());
@@ -268,7 +271,6 @@ public class MyJavaParser {
 					relation.append(objB.getName());
 					relation.append("\n");
 				}
-
 			}
 		}
 		return relation.toString();

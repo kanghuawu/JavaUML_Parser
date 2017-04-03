@@ -45,7 +45,7 @@ public class MyJavaParser {
 			this.cu = JavaParser.parse(in);
 			if(this.cu != null){
 				findPrivateFieldAndGetterSetter();
-				findAssociation();
+				findAssociations();
 				findDepedencies();
 			}
 		}catch (IOException e){
@@ -55,6 +55,14 @@ public class MyJavaParser {
 	
 	public String getName(){
 		return cu.getType(0).getNameAsString();
+	}
+	
+	public boolean isInterface(){
+		if(((ClassOrInterfaceDeclaration) cu.getType(0)).isInterface()){
+			return true;
+		}else{
+			return false;
+		}
 	}
 	
 	/**
@@ -96,7 +104,7 @@ public class MyJavaParser {
 	/* *
 	 * Find other classes or interfaces declared in field and store them into use
 	 */
-	private void findAssociation(){
+	private void findAssociations(){
 		for (FieldDeclaration field : cu.getType(0).getFields() ){
 			// find out whether this object uses other objects and their cardinalities
 			List<ClassOrInterfaceType> type = field.getVariable(0).getNodesByType(ClassOrInterfaceType.class);
@@ -123,9 +131,8 @@ public class MyJavaParser {
 	}
 	private void findDepedencies(){
 		if(!((ClassOrInterfaceDeclaration) cu.getType(0)).isInterface()){
-			
 		
-//			 find in constructor
+			// find in constructors' parameters
 			for (ConstructorDeclaration constructor : cu.getNodesByType(ConstructorDeclaration.class)){
 				for(Parameter parameter : constructor.getParameters()) {
 					if(isStringType(parameter.getType())){
@@ -158,7 +165,7 @@ public class MyJavaParser {
 			
 //			depedencies.remove(TYPE_STRING);
 //			depedencies.remove(TYPE_STRING_ARRAY);
-	//		System.out.println(useInMethod);
+			
 		}
 	}
 	
@@ -176,36 +183,36 @@ public class MyJavaParser {
 	
 	public String getParsedResult(){
 		StringBuilder result = new StringBuilder();
-		String name = cu.getTypes().get(0).getNameAsString();
-		ClassOrInterfaceDeclaration myclass = (ClassOrInterfaceDeclaration) cu.getTypes().get(0);
+		ClassOrInterfaceDeclaration type = (ClassOrInterfaceDeclaration) cu.getType(0);
+		String type_name = type.getNameAsString();
 
-		for(ClassOrInterfaceType declaration : myclass.getExtendedTypes()) {
+		for(ClassOrInterfaceType declaration : type.getExtendedTypes()) {
 			result.append(declaration.getNameAsString());
 			result.append(" <|-- ");
-			result.append(name);
+			result.append(type_name);
 			result.append("\n");
 		}
 
-		for(ClassOrInterfaceType declaration : myclass.getImplementedTypes()) {
+		for(ClassOrInterfaceType declaration : type.getImplementedTypes()) {
 			result.append(declaration.getNameAsString());
 			result.append(" <|.. ");
-			result.append(name);
+			result.append(type_name);
 			result.append("\n");
 		}
 		
-		if(myclass.isInterface()){
+		if(type.isInterface()){
 			result.append("interface ");
 		}else{
 			result.append("class ");
 		}
-		result.append(name);
+		result.append(type_name);
 		result.append("\n");
 
 		for (FieldDeclaration field : cu.getTypes().get(0).getFields() ) {
 			if(field.getModifiers().contains(PUBLIC)){
-				result.append(name + " : + ");
+				result.append(type_name + " : + ");
 		    }else if(field.getModifiers().contains(PRIVATE)){
-		    	result.append(name + " : - ");
+		    	result.append(type_name + " : - ");
 		    }else{
 		    	continue;
 		    }
@@ -218,26 +225,19 @@ public class MyJavaParser {
 		}
 		
 		for(ConstructorDeclaration constructor : cu.getType(0).getNodesByType(ConstructorDeclaration.class)){
-			result.append(name + " : + " + constructor.getName() + "(");
+			result.append(type_name + " : + " + constructor.getName() + "(");
 			result.append(retrieveParameterAndType(constructor));
 			result.append(")\n");
 		}
 		
-		for (MethodDeclaration method : cu.getTypes().get(0).getMethods() ) {
-			result.append(name + " : " );
+		for (MethodDeclaration method : cu.getType(0).getMethods() ) {
 			if(method.getModifiers().contains(PUBLIC)){
+				result.append(type_name + " : " );
 				result.append("+ ");
+				result.append(method.getName() + "(");
+				result.append(retrieveParameterAndType(method));
+				result.append(") : " + method.getType() + "\n");
 		    }
-			result.append(method.getName() + "(");
-			result.append(retrieveParameterAndType(method));
-			result.append(") : " + method.getType() + "\n");
-		}
-		
-		for(String use : depedencies){
-			result.append(this.getName());
-			result.append(" ..> ");
-			result.append(use);
-			result.append("\n");
 		}
 		
 		return result.toString();
@@ -253,7 +253,7 @@ public class MyJavaParser {
 		return result.toString();
 	}
 	
-	public static String findAssiciations(final List<MyJavaParser> totalObjects){
+	public static String getParsedAssiciations(final List<MyJavaParser> totalObjects){
 		StringBuilder relation = new StringBuilder();
 		int size = totalObjects.size();
 		for(int i = 0; i < size; i++){
@@ -265,12 +265,9 @@ public class MyJavaParser {
 				}
 				else{
 					relation.append(objA.getName());
-//					System.out.println(objA.getName() + " : " + objA.getUse());
-//					System.out.println(objB.getName() + " : " + objB.getUse());
-//					System.out.println(objB.getUse().get(objA.getName()));
-					relation.append(retrievekMultiplicity(objB.getAssociations(), objA.getName()));
+					relation.append(multiplicityHelper(objB.getAssociations(), objA.getName()));
 					relation.append(" -- ");
-					relation.append(retrievekMultiplicity(objA.getAssociations(), objB.getName()));
+					relation.append(multiplicityHelper(objA.getAssociations(), objB.getName()));
 					relation.append(objB.getName());
 					relation.append("\n");
 				}
@@ -278,10 +275,25 @@ public class MyJavaParser {
 		}
 		return relation.toString();
 	}
-	private static String retrievekMultiplicity(HashMap<String, String> use, String name){
+	private static String multiplicityHelper(HashMap<String, String> use, String name){
 		if(use.get(name) == "*"){
 			return "\"" + use.get(name) + "\" ";
 		}
 		return "";
+	}
+	
+	public static String getParsedDepedencies(List<MyJavaParser> totalObjects, HashSet<String> interfaces){
+		StringBuilder result = new StringBuilder();
+		for(MyJavaParser object : totalObjects){
+			for(String dependency : object.getDepedencies()){
+				if(interfaces.contains(dependency)){
+					result.append(object.getName());
+					result.append(" ..> ");
+					result.append(dependency);
+					result.append("\n");
+				}
+			}
+		}
+		return result.toString();
 	}
 }

@@ -24,8 +24,10 @@ import com.github.javaparser.ast.expr.TypeExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
+import com.github.javaparser.ast.stmt.ForStmt;
 import com.github.javaparser.ast.stmt.LocalClassDeclarationStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
+import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
@@ -153,6 +155,8 @@ public class MyJavaParser {
 						depedencies.add(parameter.getType().toString());
 						method.remove();;
 					}
+					
+					
 			    }
 			}
 			// find in expression statements
@@ -161,6 +165,10 @@ public class MyJavaParser {
 					continue;
 				}
 				depedencies.add(varDec.getCommonType().toString());
+			}
+			
+			for(Statement forstmt : cu.getNodesByType(Statement.class)){
+				System.out.println(forstmt) ;
 			}
 			
 //			depedencies.remove(TYPE_STRING);

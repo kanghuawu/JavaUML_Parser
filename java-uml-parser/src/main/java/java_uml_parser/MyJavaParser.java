@@ -167,8 +167,6 @@ public class MyJavaParser {
 				depedencies.add(varDec.getCommonType().toString());
 			}
 			
-//			depedencies.remove(TYPE_STRING);
-//			depedencies.remove(TYPE_STRING_ARRAY);
 			
 		}
 	}

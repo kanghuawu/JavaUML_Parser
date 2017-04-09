@@ -43,13 +43,17 @@ Test case 1:
 ![alt text](https://github.com/kanghuawu/cmpe202-personal-project/blob/master/java-uml-parser/src/main/resources/uml-parser-test-1.png "Test case 1")
 
 Test case 2:
+
 ![alt text](https://github.com/kanghuawu/cmpe202-personal-project/blob/master/java-uml-parser/src/main/resources/uml-parser-test-2.png "Test case 2")
 
 Test case 3:
+
 ![alt text](https://github.com/kanghuawu/cmpe202-personal-project/blob/master/java-uml-parser/src/main/resources/uml-parser-test-3.png "Test case 3")
 
 Test case 4:
+
 ![alt text](https://github.com/kanghuawu/cmpe202-personal-project/blob/master/java-uml-parser/src/main/resources/uml-parser-test-4.png "Test case 4")
 
 Test case 5:
+
 ![alt text](https://github.com/kanghuawu/cmpe202-personal-project/blob/master/java-uml-parser/src/main/resources/uml-parser-test-5.png "Test case 5")

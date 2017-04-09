@@ -12,7 +12,7 @@ import net.sourceforge.plantuml.SourceStringReader;
 public class RunMyParser {
 	public static void main(String[] args) throws IOException{
 		String directory = "/Users/bondk/Dropbox/SJSU/CMPE202/peronsal_project"
-				+ "/cmpe202-personal-project/java-uml-parser/src/main/resources/uml-parser-test-4";
+				+ "/cmpe202-personal-project/java-uml-parser/src/main/resources/uml-parser-test-5";
 		
 		JavaFileFinder fileDir = new JavaFileFinder(directory);
 		
@@ -31,18 +31,18 @@ public class RunMyParser {
 		sb.insert(0, "@startuml\n");
 //		sb.append("skinparam classAttributeIconSize 0\n");  // modifiers format Public(+) and Private(-)
 		sb.append("@enduml\n");
-		System.out.println(sb.toString());
+//		System.out.println(sb.toString());
 
 		
-//		String pngDir = "/Users/bondk/Dropbox/SJSU/CMPE202/peronsal_project"
-//				+ "/cmpe202-personal-project/java-uml-parser/src/main/resources/"
-//				+ directory.substring(directory.lastIndexOf("/") +  1) + ".png";
-//		OutputStream png = new FileOutputStream(pngDir);
-//		SourceStringReader reader = new SourceStringReader(sb.toString());
-//		// Write the first image to "png"
-//		String desc = reader.generateImage(png);
-//		System.out.println(desc);
-//		// Return a null string if no generation
+		String pngDir = "/Users/bondk/Dropbox/SJSU/CMPE202/peronsal_project"
+				+ "/cmpe202-personal-project/java-uml-parser/src/main/resources/"
+				+ directory.substring(directory.lastIndexOf("/") +  1) + ".png";
+		OutputStream png = new FileOutputStream(pngDir);
+		SourceStringReader reader = new SourceStringReader(sb.toString());
+		// Write the first image to "png"
+		String desc = reader.generateImage(png);
+		System.out.println(desc);
+		// Return a null string if no generation
 	}
 	
 	

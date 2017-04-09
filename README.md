@@ -34,3 +34,22 @@ Things to exclude:
 
 - [UML Generator](http://plantuml.com): Take string as input and generates UML diagrams in png format
 
+### Test Cases and Results
+
+There are four test cases for UML Class Diagrams and one for UML Sequence Diagrams. If you are interested in looking at details of them, you can go to [resources folder](https://github.com/kanghuawu/cmpe202-personal-project/tree/master/java-uml-parser/src/main/resources). You can also briefly look at what diagrams are created:
+
+Test case 1:
+
+![alt text](https://github.com/kanghuawu/cmpe202-personal-project/blob/master/java-uml-parser/src/main/resources/uml-parser-test-1.png "Test case 1")
+
+Test case 2:
+![alt text](https://github.com/kanghuawu/cmpe202-personal-project/blob/master/java-uml-parser/src/main/resources/uml-parser-test-2.png "Test case 2")
+
+Test case 3:
+![alt text](https://github.com/kanghuawu/cmpe202-personal-project/blob/master/java-uml-parser/src/main/resources/uml-parser-test-3.png "Test case 3")
+
+Test case 4:
+![alt text](https://github.com/kanghuawu/cmpe202-personal-project/blob/master/java-uml-parser/src/main/resources/uml-parser-test-4.png "Test case 4")
+
+Test case 5:
+![alt text](https://github.com/kanghuawu/cmpe202-personal-project/blob/master/java-uml-parser/src/main/resources/uml-parser-test-5.png "Test case 5")

@@ -167,10 +167,6 @@ public class MyJavaParser {
 				depedencies.add(varDec.getCommonType().toString());
 			}
 			
-			for(Statement forstmt : cu.getNodesByType(Statement.class)){
-				System.out.println(forstmt) ;
-			}
-			
 //			depedencies.remove(TYPE_STRING);
 //			depedencies.remove(TYPE_STRING_ARRAY);
 			

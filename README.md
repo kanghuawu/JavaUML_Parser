@@ -7,9 +7,9 @@ This repository is personal project for CMPE202 at San Jose State Univeristy lec
 - UML Class Diagrams
 - UML Sequence Diagrams
 
-Following document was copied from lecturer's project description.
-
 ### Requirements
+
+This part of document was copied from lecturer's project description.
 
 Things to include:
 

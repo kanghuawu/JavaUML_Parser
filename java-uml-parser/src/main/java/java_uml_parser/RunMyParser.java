@@ -1,5 +1,5 @@
 package java_uml_parser;
-
+import net.sourceforge.plantuml.SourceStringReader;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import net.sourceforge.plantuml.SourceStringReader;
+
 
 public class RunMyParser {
 	public static void main(String[] args) throws IOException{
@@ -31,8 +31,9 @@ public class RunMyParser {
 		sb.insert(0, "@startuml\n");
 //		sb.append("skinparam classAttributeIconSize 0\n");  // modifiers format Public(+) and Private(-)
 		sb.append("@enduml\n");
-		System.out.println(sb.toString());
-
+//		System.out.println(sb.toString());
+		
+		
 		
 //		String pngDir = "/Users/bondk/Dropbox/SJSU/CMPE202/peronsal_project"
 //				+ "/cmpe202-personal-project/java-uml-parser/src/main/resources/"

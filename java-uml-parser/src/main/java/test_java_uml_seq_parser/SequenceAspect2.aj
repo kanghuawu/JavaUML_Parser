@@ -8,7 +8,7 @@ public aspect SequenceAspect2 {
 	/**
 	 * SequenceParser.parse()
 	 */
-	pointcut callParse() : call(* java_uml_seq_parser.SequenceParser.parse());
+	pointcut callParse() : call(* test_java_uml_seq_parser.SequenceParser.parse());
  
     before() : callParse() {
         System.out.println("- (.aj) before parse");
@@ -26,7 +26,7 @@ public aspect SequenceAspect2 {
 	 * SequenceParser.parseWithArgument()
 	 */
 	pointcut callParseWithArgument(SequenceParser caller, String argumentStr) : 
-		call(* java_uml_seq_parser.SequenceParser.parseWithArgument(String))
+		call(* test_java_uml_seq_parser.SequenceParser.parseWithArgument(String))
 		&& args(argumentStr) && target(caller);
 	 
     before(SequenceParser caller, String argumentStr) : 

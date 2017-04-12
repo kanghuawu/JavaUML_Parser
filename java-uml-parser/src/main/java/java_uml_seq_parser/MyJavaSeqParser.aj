@@ -13,11 +13,15 @@ public aspect MyJavaSeqParser {
 	StringBuilder re;
 	Stack<String> stack;
 	
-	pointcut mainparser() : !within(MyJavaSeqParser) && execution(* *.main(..)) ;
+	pointcut mainMethod() : !within(MyJavaSeqParser) && execution(* *.main(..)) ;
 	
-	pointcut parse() : !within(MyJavaSeqParser) && execution(* *.*(..)) && !execution(* *.main(..)) ;
+	pointcut allMethode() : !within(MyJavaSeqParser) && execution(* *.*(..)) && !execution(* *.main(..)) ;
 	
-	before() : parse() {
+	pointcut voidMethod() : !within(MyJavaSeqParser) && execution(void *.*(..)) && !execution(* *.main(..));
+	
+	pointcut nonVoidMethod() : !within(MyJavaSeqParser) && execution(!void *.*(..)) && !execution(* *.main(..));
+	
+	before() : allMethode() {
 		String previous_class = stack.peek();
 		String current_class = getClassName(thisJoinPoint.getSignature().getDeclaringTypeName());
 		String message = thisJoinPoint.getSignature().getName();
@@ -26,7 +30,15 @@ public aspect MyJavaSeqParser {
 		stack.push(current_class);
 	}
 	
-	after() : parse() {
+	after() returning : nonVoidMethod() {
+		stack.pop();
+		String previous_class = stack.peek();
+		String current_class = getClassName(thisJoinPoint.getSignature().getDeclaringTypeName());
+		re.append(current_class + " --> " + previous_class + "\n");
+		re.append("deactivate " + current_class + "\n");
+	}
+	
+	after() : voidMethod() {
 		String previous_class = stack.pop();
 		String current_class = getClassName(thisJoinPoint.getSignature().getDeclaringTypeName());
 		
@@ -34,12 +46,7 @@ public aspect MyJavaSeqParser {
 		
 	}
 	
-	after() returning : parse() {
-		String current_class = getClassName(thisJoinPoint.getSignature().getDeclaringTypeName());
-		re.append("deactivate " + current_class + "\n");
-	}
-	
-	before(): mainparser() {
+	before(): mainMethod() {
 		re = new StringBuilder();
 		stack = new Stack<String>();
 		String current_class = getClassName(thisJoinPoint.getSignature().getDeclaringTypeName());
@@ -49,13 +56,14 @@ public aspect MyJavaSeqParser {
 		re.append("activate " + current_class + "\n");
 	}
 	
-	after(): mainparser() {
+	after(): mainMethod() {
 		String last_class = stack.pop();
 		String current_class = getClassName(thisJoinPoint.getSignature().getDeclaringTypeName());
 		if(!last_class.equals(current_class)) System.out.println("stack error!!!");
 		re.append("deactivate " + current_class + "\n");
 		re.append("@enduml");
-		System.out.println(re.toString());
+//		System.out.println(re.toString());
+		
 		String pngDir = "/Users/bondk/Dropbox/SJSU/CMPE202/peronsal_project/cmpe202-personal-project"
 				+ "/java-uml-parser/src/main/resources/uml-sequence-test.png";
 		try{

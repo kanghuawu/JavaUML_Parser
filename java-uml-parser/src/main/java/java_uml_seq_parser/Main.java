@@ -10,8 +10,8 @@ public class Main
         s.attach(p);
         s.attach(o);
         s.setState("The Price of gas is at $5.00/gal");
-//        s.setState("The New iPad is out today");
-//        s.setState("Hey, Its Friday!");
+        s.setState("The New iPad is out today");
+        s.setState("Hey, Its Friday!");
         p.showState();
         o.showState();
     }

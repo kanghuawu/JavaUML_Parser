@@ -4,6 +4,8 @@ package java_uml_seq_parser;
 import java.util.Stack;
 import org.aspectj.lang.reflect.CodeSignature;
 import net.sourceforge.plantuml.SourceStringReader;
+import test_java_uml_seq_parser.SequenceParser;
+
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 
@@ -12,6 +14,9 @@ public aspect MyJavaSeqParser {
 	
 	StringBuilder re;
 	Stack<String> stack;
+	String dir;
+	
+//	pointcut mainMethodArg(Main caller, String argumentStr) : !within(MyJavaSeqParser) && execution(* *.main(String args[])) ;
 	
 	pointcut mainMethod() : !within(MyJavaSeqParser) && execution(* *.main(..)) ;
 	
@@ -23,7 +28,7 @@ public aspect MyJavaSeqParser {
 	
 	before() : allMethode() {
 		String previous_class = stack.peek();
-		String current_class = getClassName(thisJoinPoint.getSignature().getDeclaringTypeName());
+		String current_class = getClassName(thisJoinPoint.getTarget().toString());
 		String message = thisJoinPoint.getSignature().getName();
 		re.append(previous_class + " -> " + current_class + " : " + message + "\n");
 		re.append("activate " + current_class + "\n");
@@ -33,15 +38,14 @@ public aspect MyJavaSeqParser {
 	after() returning : nonVoidMethod() {
 		stack.pop();
 		String previous_class = stack.peek();
-		String current_class = getClassName(thisJoinPoint.getSignature().getDeclaringTypeName());
+		String current_class = getClassName(thisJoinPoint.getTarget().toString());
 		re.append(current_class + " --> " + previous_class + "\n");
 		re.append("deactivate " + current_class + "\n");
 	}
 	
 	after() : voidMethod() {
 		String previous_class = stack.pop();
-		String current_class = getClassName(thisJoinPoint.getSignature().getDeclaringTypeName());
-		
+		String current_class = getClassName(thisJoinPoint.getTarget().toString());
 		re.append("deactivate " + current_class + "\n");
 		
 	}
@@ -62,7 +66,7 @@ public aspect MyJavaSeqParser {
 		if(!last_class.equals(current_class)) System.out.println("stack error!!!");
 		re.append("deactivate " + current_class + "\n");
 		re.append("@enduml");
-//		System.out.println(re.toString());
+		System.out.println(re.toString());
 		
 		String pngDir = "/Users/bondk/Dropbox/SJSU/CMPE202/peronsal_project/cmpe202-personal-project"
 				+ "/java-uml-parser/src/main/resources/uml-sequence-test.png";
@@ -76,7 +80,16 @@ public aspect MyJavaSeqParser {
 		}
 	}
 	
+//	before() : mainMethodArg() {
+//		System.out.println( thisJoinPoint.getArgs()[0]);
+////		if(thisJoinPoint.getArgs().length == 1){
+////			dir = (String) thisJoinPoint.getArgs()[0];
+////			System.out.println(dir);
+////		}
+//	}
+	
 	private String getClassName(String str){
-		return str.substring(str.indexOf(".") + 1);
+		if(str.indexOf("@") != -1) return str.substring(str.indexOf(".") + 1, str.indexOf("@"));
+		else return str.substring(str.indexOf(".") + 1);
 	}
 }

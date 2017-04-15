@@ -38,6 +38,8 @@ Things to exclude:
 
 There are five test cases for UML Class Diagrams and one for UML Sequence Diagrams. If you are interested in looking at details of them, you can go to [resources folder](https://github.com/kanghuawu/cmpe202-personal-project/tree/master/java-uml-parser/src/main/resources). You can also briefly look at what diagrams are created:
 
+**UML Class Diagram**
+
 Test case 1:
 
 ![alt text](https://github.com/kanghuawu/cmpe202-personal-project/blob/master/java-uml-parser/src/main/resources/uml-parser-test-1.png "Test case 1")
@@ -57,3 +59,7 @@ Test case 4:
 Test case 5:
 
 ![alt text](https://github.com/kanghuawu/cmpe202-personal-project/blob/master/java-uml-parser/src/main/resources/uml-parser-test-5.png "Test case 5")
+
+**UML Sequence Diagram**
+
+![alt text](https://github.com/kanghuawu/cmpe202-personal-project/blob/master/java-uml-parser/src/main/resources/uml-sequence-test.png "Sequence Test case")

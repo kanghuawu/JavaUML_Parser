@@ -12,11 +12,11 @@ import java.io.OutputStream;
 
 public aspect MyJavaSeqParser {
 	
-	StringBuilder re;
-	Stack<String> stack;
-	String dir;
+	private StringBuilder re;
+	private Stack<String> stack;
+	private String pngDir;
 	
-//	pointcut mainMethodArg(Main caller, String argumentStr) : !within(MyJavaSeqParser) && execution(* *.main(String args[])) ;
+	pointcut mainMethodArg(String[] arg) : !within(MyJavaSeqParser) && execution(* *.main(..)) && args(arg);
 	
 	pointcut mainMethod() : !within(MyJavaSeqParser) && execution(* *.main(..)) ;
 	
@@ -50,7 +50,8 @@ public aspect MyJavaSeqParser {
 		
 	}
 	
-	before(): mainMethod() {
+	before(String[] arg) : mainMethodArg(arg) {
+		pngDir = arg[0];
 		re = new StringBuilder();
 		stack = new Stack<String>();
 		String current_class = getClassName(thisJoinPoint.getSignature().getDeclaringTypeName());
@@ -60,7 +61,7 @@ public aspect MyJavaSeqParser {
 		re.append("activate " + current_class + "\n");
 	}
 	
-	after(): mainMethod() {
+	after(String[] arg) : mainMethodArg(arg) {
 		String last_class = stack.pop();
 		String current_class = getClassName(thisJoinPoint.getSignature().getDeclaringTypeName());
 		if(!last_class.equals(current_class)) System.out.println("stack error!!!");
@@ -68,8 +69,8 @@ public aspect MyJavaSeqParser {
 		re.append("@enduml");
 		System.out.println(re.toString());
 		
-		String pngDir = "/Users/bondk/Dropbox/SJSU/CMPE202/peronsal_project/cmpe202-personal-project"
-				+ "/java-uml-parser/src/main/resources/uml-sequence-test.png";
+//		String pngDir = "/Users/bondk/Dropbox/SJSU/CMPE202/peronsal_project/cmpe202-personal-project"
+//				+ "/java-uml-parser/src/main/resources/uml-sequence-test.png";
 		try{
 			OutputStream png = new FileOutputStream(pngDir);
 			SourceStringReader reader = new SourceStringReader(re.toString());
@@ -80,7 +81,7 @@ public aspect MyJavaSeqParser {
 		}
 	}
 	
-//	before() : mainMethodArg() {
+//	before(String[] arg) : mainMethodArg(arg) {
 //		System.out.println( thisJoinPoint.getArgs()[0]);
 ////		if(thisJoinPoint.getArgs().length == 1){
 ////			dir = (String) thisJoinPoint.getArgs()[0];

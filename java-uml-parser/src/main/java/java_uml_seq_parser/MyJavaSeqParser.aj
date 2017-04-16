@@ -16,15 +16,15 @@ public aspect MyJavaSeqParser {
 	private Stack<String> stack;
 	private String pngDir;
 	
-	pointcut mainMethodArg(String[] arg) : !within(MyJavaSeqParser) && execution(* *.main(..)) && args(arg);
+	pointcut mainMethodArg(String[] arg) : within(java_uml_seq_parser.*) && !within(MyJavaSeqParser) && execution(* *.main(..)) && args(arg);
 	
-	pointcut mainMethod() : !within(MyJavaSeqParser) && execution(* *.main(..)) ;
+	pointcut mainMethod() : within(java_uml_seq_parser.*) &&!within(MyJavaSeqParser) && execution(* *.main(..)) ;
 	
-	pointcut allMethode() : !within(MyJavaSeqParser) && execution(* *.*(..)) && !execution(* *.main(..)) ;
+	pointcut allMethode() : within(java_uml_seq_parser.*) &&!within(MyJavaSeqParser) && execution(* *.*(..)) && !execution(* *.main(..)) ;
 	
-	pointcut voidMethod() : !within(MyJavaSeqParser) && execution(void *.*(..)) && !execution(* *.main(..));
+	pointcut voidMethod() : within(java_uml_seq_parser.*) &&!within(MyJavaSeqParser) && execution(void *.*(..)) && !execution(* *.main(..));
 	
-	pointcut nonVoidMethod() : !within(MyJavaSeqParser) && execution(!void *.*(..)) && !execution(* *.main(..));
+	pointcut nonVoidMethod() : within(java_uml_seq_parser.*) && !within(MyJavaSeqParser) && execution(!void *.*(..)) && !execution(* *.main(..));
 	
 	before() : allMethode() {
 		String previous_class = stack.peek();
@@ -51,7 +51,7 @@ public aspect MyJavaSeqParser {
 	}
 	
 	before(String[] arg) : mainMethodArg(arg) {
-		pngDir = arg[0];
+		pngDir = arg[arg.length - 1];
 		re = new StringBuilder();
 		stack = new Stack<String>();
 		String current_class = getClassName(thisJoinPoint.getSignature().getDeclaringTypeName());
@@ -71,14 +71,14 @@ public aspect MyJavaSeqParser {
 		
 //		String pngDir = "/Users/bondk/Dropbox/SJSU/CMPE202/peronsal_project/cmpe202-personal-project"
 //				+ "/java-uml-parser/src/main/resources/uml-sequence-test.png";
-		try{
-			OutputStream png = new FileOutputStream(pngDir);
-			SourceStringReader reader = new SourceStringReader(re.toString());
-			String desc = reader.generateImage(png);
-			System.out.println(desc);
-		}catch(Exception e) {
-			e.printStackTrace();
-		}
+//		try{
+//			OutputStream png = new FileOutputStream(pngDir);
+//			SourceStringReader reader = new SourceStringReader(re.toString());
+//			String desc = reader.generateImage(png);
+//			System.out.println(desc);
+//		}catch(Exception e) {
+//			e.printStackTrace();
+//		}
 	}
 	
 //	before(String[] arg) : mainMethodArg(arg) {
@@ -90,6 +90,7 @@ public aspect MyJavaSeqParser {
 //	}
 	
 	private String getClassName(String str){
+//		System.out.println(str);
 		if(str.indexOf("@") != -1) return str.substring(str.indexOf(".") + 1, str.indexOf("@"));
 		else return str.substring(str.indexOf(".") + 1);
 	}

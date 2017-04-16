@@ -1,5 +1,7 @@
 package java_uml_parser;
 import net.sourceforge.plantuml.SourceStringReader;
+
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -11,14 +13,32 @@ import java.util.List;
 
 public class RunMyParser {
 	public static void main(String[] args) throws IOException{
-		String directory = "/Users/bondk/Dropbox/SJSU/CMPE202/peronsal_project"
-				+ "/cmpe202-personal-project/java-uml-parser/src/main/resources/uml-parser-test-5";
 		
-		JavaFileFinder fileDir = new JavaFileFinder(directory);
+		if(args.length != 2){
+			System.out.println("Please pass two arguments: java -jar umlparser.jar <source folder> <output file name>" );
+			return;
+		}
+		
+		String input_dir = args[0];
+		String output_dir = args[1];
+		File in = new File(input_dir);
+		File out = new File(output_dir.substring(0, output_dir.lastIndexOf("/")));
+		if(!in.exists()) {
+			System.out.println(in);
+			System.out.println("Input directory does not exist!");
+			return;
+		}else if (!out.exists()){
+			System.out.println(out);
+			System.out.println("Output direcotry does not exist!");
+			return;
+		}
+		
+		JavaFileFinder fileDir = new JavaFileFinder(input_dir);
 		
 		List<MyJavaParser> totalObjects = new ArrayList<MyJavaParser>();
 		StringBuilder sb = new StringBuilder();
-		HashSet<String> interfaces = new HashSet<String>(); 
+		HashSet<String> interfaces = new HashSet<String>();
+		System.out.println("Parsing Java files...");
 		for(String javaFile : fileDir.getJavaFiles()){
 			MyJavaParser javaParser = new MyJavaParser(javaFile);
 			if(javaParser.isInterface()) interfaces.add(javaParser.getName());
@@ -29,22 +49,16 @@ public class RunMyParser {
 		sb.append(MyJavaParser.getParsedAssiciations(totalObjects));
 		sb.append(MyJavaParser.getParsedDepedencies(totalObjects, interfaces));
 		sb.insert(0, "@startuml\n");
-//		sb.append("skinparam classAttributeIconSize 0\n");  // modifiers format Public(+) and Private(-)
+		sb.append("skinparam classAttributeIconSize 0\n");  // modifiers format Public(+) and Private(-)
 		sb.append("@enduml\n");
 //		System.out.println(sb.toString());
 		
-		
-		
-//		String pngDir = "/Users/bondk/Dropbox/SJSU/CMPE202/peronsal_project"
-//				+ "/cmpe202-personal-project/java-uml-parser/src/main/resources/"
-//				+ directory.substring(directory.lastIndexOf("/") +  1) + ".png";
-//		OutputStream png = new FileOutputStream(pngDir);
-//		SourceStringReader reader = new SourceStringReader(sb.toString());
-//		// Write the first image to "png"
-//		String desc = reader.generateImage(png);
-//		System.out.println(desc);
-//		// Return a null string if no generation
+		OutputStream png = new FileOutputStream(output_dir);
+		SourceStringReader reader = new SourceStringReader(sb.toString());
+		// Write the first image to "png"
+		System.out.println("Generating UML diagrams...");
+		String desc = reader.generateImage(png);
+		System.out.println(desc);
+		// Return a null string if no generation
 	}
-	
-	
 }

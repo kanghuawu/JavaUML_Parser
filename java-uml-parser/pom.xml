@@ -133,7 +133,7 @@
 					<!-- MainClass in mainfest make a executable jar -->
 					<archive>
 					  <manifest>
-						<mainClass>java_uml_seq_parser.MyJavaSeqParser</mainClass>
+						<mainClass>java_uml_parser.RunMyParser</mainClass>
 					  </manifest>
 					</archive>
 				</configuration>

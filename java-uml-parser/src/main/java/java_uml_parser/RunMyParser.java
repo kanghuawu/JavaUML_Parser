@@ -18,9 +18,11 @@ public class RunMyParser {
 			System.out.println("Please pass two arguments: java -jar umlparser.jar <source folder> <output file name>" );
 			return;
 		}
-		
+		System.out.println("Input dir...");
 		String input_dir = args[0];
 		String output_dir = args[1];
+		System.out.println("Input directory is " + input_dir);
+		System.out.println("Output directory is " + output_dir);
 		File in = new File(input_dir);
 		File out = new File(output_dir.substring(0, output_dir.lastIndexOf("/")));
 		if(!in.exists()) {
@@ -32,7 +34,7 @@ public class RunMyParser {
 			System.out.println("Output direcotry does not exist!");
 			return;
 		}
-		
+		System.out.println("Finding Java files...");
 		JavaFileFinder fileDir = new JavaFileFinder(input_dir);
 		
 		List<MyJavaParser> totalObjects = new ArrayList<MyJavaParser>();

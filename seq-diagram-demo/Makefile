@@ -1,7 +1,7 @@
 all: clean
 
 clean: 
-	rm *.class
+	find . -name "*.class" -exec rm -rf {} \;
 
 java:
 	ajc -1.5 *.java

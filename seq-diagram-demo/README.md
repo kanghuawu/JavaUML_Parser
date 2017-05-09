@@ -4,15 +4,15 @@
 
 2. Create an output folder at the same level as seq-diagram-demo
 
-'''
+```
 mkdir output
-'''
+```
 
 3. cd into seq-diagram-demo and run command make demo
 
-'''
+```
 cd seq-diagram-demo
 make demo
-'''
+```
 
 4. There should be an output.png inside the output folder just created

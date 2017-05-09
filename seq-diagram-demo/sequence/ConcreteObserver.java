@@ -1,3 +1,4 @@
+package sequence;
 // package java_uml_seq_parser;
 
 public class ConcreteObserver implements Observer {

@@ -1,8 +1,9 @@
+package sequence;
 // package java_uml_seq_parser;
 
 public class Main
 {
-    public static void main(String [] args)
+    public static void main(String[] args)
     {
         TheEconomy s = new TheEconomy();
         Pessimist p = new Pessimist(s);

@@ -1,4 +1,6 @@
+package sequence;
 // package java_uml_seq_parser;
+
 import java.util.ArrayList;
 
 public class ConcreteSubject implements Subject {
